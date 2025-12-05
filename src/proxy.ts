@@ -1,3 +1,4 @@
+/*
 import { NextRequest, NextResponse } from "next/server";
 
 const SESSION_COOKIE_NAME = "session";
@@ -42,7 +43,8 @@ export const config = {
      * - _next/image (image optimization files)
      * - favicon.ico (favicon file)
      * - Files with extensions
-     */
+     *
     "/((?!api|_next/static|_next/image|favicon.ico|.*\\..*).*)",
   ],
 };
+*/
