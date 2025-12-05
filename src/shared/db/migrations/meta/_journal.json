@@ -5,29 +5,8 @@
     {
       "idx": 0,
       "version": "7",
-      "when": 1764917435787,
-      "tag": "0000_flashy_fenris",
-      "breakpoints": true
-    },
-    {
-      "idx": 1,
-      "version": "7",
-      "when": 1764932466042,
-      "tag": "0001_parallel_justin_hammer",
-      "breakpoints": true
-    },
-    {
-      "idx": 2,
-      "version": "7",
-      "when": 1764933879194,
-      "tag": "0002_bright_wildside",
-      "breakpoints": true
-    },
-    {
-      "idx": 3,
-      "version": "7",
-      "when": 1764938270228,
-      "tag": "0003_mushy_venom",
+      "when": 1764939646813,
+      "tag": "0000_sudden_morlun",
       "breakpoints": true
     }
   ]
