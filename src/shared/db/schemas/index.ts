@@ -1,0 +1,1 @@
+export * from "@/entities/auth/schema/auth.schema"

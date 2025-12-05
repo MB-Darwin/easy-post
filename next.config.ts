@@ -1,20 +1,19 @@
-import type { NextConfig } from 'next';
-import withBundleAnalyzer from '@next/bundle-analyzer';
-import createNextIntlPlugin from 'next-intl/plugin';
-import './src/shared/env/client-env';
-import './src/shared/env/server-env';
-
+import type { NextConfig } from "next";
+import withBundleAnalyzer from "@next/bundle-analyzer";
+import createNextIntlPlugin from "next-intl/plugin";
+import "./src/shared/env/client-env";
+import "./src/shared/env/server-env";
 
 // Define the base Next.js configuration
 const baseConfig: NextConfig = {
   devIndicators: {
-    position: 'bottom-right',
+    position: "bottom-right",
   },
   poweredByHeader: false,
   reactStrictMode: true,
   reactCompiler: true,
   outputFileTracingIncludes: {
-    '/': ['./migrations/**/*'],
+    "/": ["./migrations/**/*"],
   },
   experimental: {
     turbopackFileSystemCacheForDev: true,
@@ -22,10 +21,12 @@ const baseConfig: NextConfig = {
 };
 
 // Initialize the Next-Intl plugin
-let configWithPlugins = createNextIntlPlugin('./src/libs/I18n.ts')(baseConfig);
+let configWithPlugins = createNextIntlPlugin("./src/shared/i18n/request.ts")(
+  baseConfig
+);
 
 // Conditionally enable bundle analysis
-if (process.env.ANALYZE === 'true') {
+if (process.env.ANALYZE === "true") {
   configWithPlugins = withBundleAnalyzer()(configWithPlugins);
 }
 
