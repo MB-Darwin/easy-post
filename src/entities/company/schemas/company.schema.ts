@@ -132,7 +132,7 @@ export const category = createTable(
   (d) => ({
     id: d.uuid("id").primaryKey().defaultRandom(),
     name: d.varchar("name"),
-    decription: d.text("decription").notNull(),
+    description: d.text("decription").notNull(),
     createdAt: d.timestamp("created_at").defaultNow().notNull(),
     updatedAt: d.timestamp("updated_at").defaultNow().notNull(), // Add this
   }),
@@ -305,3 +305,6 @@ export type CompanyUpdate = Partial<CompanyInsert>;
 
 export type Company = CompanySelect;
 export type NewCompany = CompanyInsert;
+
+export type Workspace = typeof workspace.$inferSelect;
+export type NewWorkspace = typeof workspace.$inferInsert;
