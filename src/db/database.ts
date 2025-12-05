@@ -1,4 +1,4 @@
-import { createdAt, createTable, id, updatedAt } from "@/shared/utils";
+import { createdAt, createTable, id, updatedAt } from "../shared/utils";
 import { relations } from "drizzle-orm";
 import { index, integer, jsonb, pgEnum, pgTable, text, timestamp, unique, uuid } from "drizzle-orm/pg-core";
 
