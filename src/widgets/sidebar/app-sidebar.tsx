@@ -1,4 +1,4 @@
-import  AppSidebar  from '@/widgets/sidebar/app-sidebar' // Note: Named import
+import AppSidebar from '@/widgets/sidebar/app-sidebar'
 import {
   Breadcrumb,
   BreadcrumbItem,
@@ -6,8 +6,8 @@ import {
   BreadcrumbList,
   BreadcrumbPage,
   BreadcrumbSeparator,
-} from '@/ui/breadcrub' // ✅ Fixed spelling (breadcrub -> breadcrumb)
-import { Separator } from '@/ui/seperator' // ✅ Fixed spelling (seperator -> separator)
+} from '@/ui/breadcrub'
+import { Separator } from '@/ui/seperator'
 import {
   SidebarInset,
   SidebarProvider,
@@ -53,4 +53,3 @@ export default function Page() {
     </SidebarProvider>
   )
 }
-
