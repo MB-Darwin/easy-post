@@ -1,4 +1,4 @@
-import { createdAt, createTable, id, updatedAt } from "../shared/utils";
+import { createdAt, createTable, id, updatedAt } from "@/shared/utils";
 import { relations } from "drizzle-orm";
 import { index, integer, jsonb, pgEnum, pgTable, text, timestamp, unique, uuid } from "drizzle-orm/pg-core";
 
@@ -8,13 +8,13 @@ import { index, integer, jsonb, pgEnum, pgTable, text, timestamp, unique, uuid }
  */
 
 export const socialPlatformEnum = pgEnum("social_platform", [
-  "facebook",
-  "instagram",
-  "threads",
-  "tiktok",
-  "linkedin",
-  "twitter",
-  "discord",
+    "facebook",
+    "instagram",
+    "threads",
+    "tiktok",
+    "linkedin",
+    "twitter",
+    "discord",
 ]);
 
 export const postStatusEnum = pgEnum("post_status", [
@@ -81,28 +81,11 @@ export const socialAccounts = pgTable("social_accounts", {
   metadata: jsonb("metadata"),
   createdAt: timestamp("created_at").defaultNow().notNull(),
   updatedAt: timestamp("updated_at").defaultNow().notNull(),
-});
-
-export const campaign = createTable(
-  "campaign",
-  (d) => ({
-    id: id(),
-    name: d.text("name").notNull(),
-    userId: d.text("user_id").notNull(), // Créateur de la campagne
-    storeId: d.text("store_id").notNull(), // Boutique cible
-    description: d.text("description"),
-    budget: d.numeric("budget"),
-    
-    status: campaignStatusEnum("status").default('DRAFT').notNull(),
-    scheduleTime: d.timestamp("schedule_time", { withTimezone: true }),
-    
-    ...createdAt,
-    ...updatedAt,
-}),
-(table) => [
-    index("campaign_user_store_idx").on(table.userId, table.storeId),
-  ]
-);
+},(table) => [
+  index("social_accounts_company_id_idx").on(table.companyId),
+  index("posts_status_idx").on(table.status),
+  index("posts_scheduled_at_idx").on(table.status),
+]);
 
 export const posts = pgTable("posts", {
   id: uuid("id").primaryKey().defaultRandom(),
@@ -119,7 +102,12 @@ export const posts = pgTable("posts", {
   metadata: jsonb("metadata"),
   createdAt: timestamp("created_at").defaultNow().notNull(),
   updatedAt: timestamp("updated_at").defaultNow().notNull(),
-});
+}, (table) => [
+  index("posts_company_id_idx").on(table.companyId),
+  index("posts_status_idx").on(table.status),
+  index("posts_scheduled_at_idx").on(table.scheduledAt),
+]);
+
 
 export const postAccounts = pgTable("post_accounts", {
   id: uuid("id").primaryKey().defaultRandom(),
@@ -135,7 +123,13 @@ export const postAccounts = pgTable("post_accounts", {
   retryCount: integer("retry_count").default(0), // ajout
   publishedAt: timestamp("published_at"),
   createdAt: timestamp("created_at").defaultNow().notNull(),
-});
+}, (table) => [
+  index("post_accounts_post_id_idx").on(table.postId),
+  index("post_accounts_account_id_idx").on(table.accountId),
+  unique("post_accounts_unique").on(table.postId, table.accountId), // Prevent duplicate associations
+]);
+
+
 
 export const analytics = pgTable("analytics", {
   id: uuid("id").primaryKey().defaultRandom(),
@@ -148,6 +142,8 @@ export const analytics = pgTable("analytics", {
   views: integer("views").default(0),
   rawData: jsonb("raw_data"),
   fetchedAt: timestamp("fetched_at").defaultNow().notNull(),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+  updatedAt: timestamp("updated_at").defaultNow().notNull(), // Add this
 });
 
 // =====================
@@ -213,3 +209,6 @@ export type CompanyUpdate = Partial<CompanyInsert>;
 
 export type Company = CompanySelect;
 export type NewCompany = CompanyInsert;
+
+export type Analytics = typeof analytics.$inferSelect;
+export type NewAnalytics = typeof analytics.$inferInsert;
