@@ -78,6 +78,9 @@ export default async function RootLayout(props: {
           <Preloader>
             <ReactQueryProvider>
               <CompanyProvider company={company}>
+                {props.children}
+              </CompanyProvider>
+              <CompanyProvider company={company}>
                 <Toaster />
                 {props.children}
                 <ModalProvider registry={registry} />
