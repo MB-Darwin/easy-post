@@ -64,6 +64,18 @@ export const company = createTable(
   ]
 );
 
+export const workspace = createTable("workspace", (d) => ({
+  id: d.uuid("id").primaryKey().defaultRandom(),
+  companyId: d.text("company_id").notNull().references(() => company.id, { onDelete: "cascade" }),
+  posts: d.uuid("posts_id").references(() => posts.id, { onDelete: "cascade"}),
+  name: d.text("name").notNull(),
+  description: d.text("description"),
+  createdAt: d.timestamp("created_at").defaultNow().notNull(),
+  updatedAt: d.timestamp("updated_at").defaultNow().notNull(), // Add this
+}), (table) => [
+
+]);
+
 export const socialAccounts = createTable( "social_accounts", (d) => ({
   id: d.uuid("id").primaryKey().defaultRandom(),
   companyId: d.text("company_id")

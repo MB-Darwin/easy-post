@@ -8,6 +8,13 @@
       "when": 1764945259261,
       "tag": "0000_outstanding_shard",
       "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "7",
+      "when": 1764956261637,
+      "tag": "0001_nosy_vector",
+      "breakpoints": true
     }
   ]
 }
