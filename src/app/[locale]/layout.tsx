@@ -8,7 +8,7 @@ import { hasLocale, NextIntlClientProvider } from "next-intl";
 import { notFound } from "next/navigation";
 import { setRequestLocale } from "next-intl/server";
 import { getAuthenticatedCompany } from "@/shared/lib/auth";
-import Preloader from "@/shared/components/Preloader";
+import Preloader from "@/shared/components/preloader";
 import { ReactQueryProvider } from "@/shared/providers/react-query-provider";
 import { CompanyProvider } from "@/entities/company/providers/company-provider";
 

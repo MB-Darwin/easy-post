@@ -1,17 +1,35 @@
-import type { ReactNode, RefObject } from 'react';
-import { useCallback, useEffect, useRef } from 'react';
+"use client";
+
+import type { ReactNode, RefObject } from "react";
+import { useEffect, useLayoutEffect, useRef } from "react";
+
+// Types
+type ScrollTarget = HTMLElement | Document;
 
 type ScrollspyProps = {
   children: ReactNode;
-  targetRef?: RefObject<HTMLElement | HTMLDivElement | Document | null | undefined>;
+  targetRef?: RefObject<ScrollTarget | null>;
   onUpdate?: (id: string) => void;
   offset?: number;
   smooth?: boolean;
   className?: string;
   dataAttribute?: string;
   history?: boolean;
-  throttleTime?: number;
 };
+
+type ScrollspyState = {
+  prevId: string | null;
+  anchors: Element[];
+};
+
+// SSR-safe layout effect
+const useIsomorphicLayoutEffect =
+  typeof window !== "undefined" ? useLayoutEffect : useEffect;
+
+// Type guard for HTMLElement
+function isHTMLElement(target: Window | HTMLElement): target is HTMLElement {
+  return target !== window && "scrollTop" in target;
+}
 
 export function Scrollspy({
   children,
@@ -20,181 +38,232 @@ export function Scrollspy({
   className,
   offset = 0,
   smooth = true,
-  dataAttribute = 'scrollspy',
+  dataAttribute = "scrollspy",
   history = true,
 }: ScrollspyProps) {
-  const selfRef = useRef<HTMLDivElement | null>(null);
-  const anchorElementsRef = useRef<Element[] | null>(null);
-  const prevIdTracker = useRef<string | null>(null);
+  const containerRef = useRef<HTMLDivElement>(null);
 
-  // Sets active nav, hash, prevIdTracker, and calls onUpdate
-  const setActiveSection = useCallback(
-    (sectionId: string | null, force = false) => {
-      if (!sectionId) {
-        return;
-      }
-      anchorElementsRef.current?.forEach((item) => {
-        const id = item.getAttribute(`data-${dataAttribute}-anchor`);
-        if (id === sectionId) {
-          item.setAttribute('data-active', 'true');
-        } else {
-          item.removeAttribute('data-active');
-        }
-      });
-      if (onUpdate) {
-        onUpdate(sectionId);
-      }
-      if (history && (force || prevIdTracker.current !== sectionId)) {
-        window.history.replaceState({}, '', `#${sectionId}`);
-      }
-      prevIdTracker.current = sectionId;
-    },
-    [anchorElementsRef, dataAttribute, history, onUpdate],
-  );
+  // Mutable state that doesn't trigger re-renders
+  const stateRef = useRef<ScrollspyState>({
+    prevId: null,
+    anchors: [],
+  });
 
-  const handleScroll = useCallback(() => {
-    if (!anchorElementsRef.current || anchorElementsRef.current.length === 0) {
-      return;
-    }
-    const scrollElement = targetRef?.current === document ? window : targetRef?.current;
-    const scrollTop
-      = scrollElement === window
-        ? window.scrollY || document.documentElement.scrollTop
-        : (scrollElement as HTMLElement).scrollTop;
+  // Store latest callback ref to prevent stale closures
+  const onUpdateRef = useRef(onUpdate);
 
-    // Find the anchor whose section is closest to but not past the top
-    let activeIdx = 0;
-    let minDelta = Infinity;
-    anchorElementsRef.current.forEach((anchor, idx) => {
-      const sectionId = anchor.getAttribute(`data-${dataAttribute}-anchor`);
-      const sectionElement = document.getElementById(sectionId!);
-      if (!sectionElement) {
-        return;
-      }
-      let customOffset = offset;
-      const dataOffset = anchor.getAttribute(`data-${dataAttribute}-offset`);
-      if (dataOffset) {
-        customOffset = Number.parseInt(dataOffset, 10);
-      }
-      const delta = Math.abs(sectionElement.offsetTop - customOffset - scrollTop);
-      if (sectionElement.offsetTop - customOffset <= scrollTop && delta < minDelta) {
-        minDelta = delta;
-        activeIdx = idx;
-      }
-    });
-
-    // If at bottom, force last anchor
-    if (scrollElement) {
-      const scrollHeight
-        = scrollElement === window
-          ? document.documentElement.scrollHeight
-          : (scrollElement as HTMLElement).scrollHeight;
-      const clientHeight
-        = scrollElement === window ? window.innerHeight : (scrollElement as HTMLElement).clientHeight;
-      if (scrollTop + clientHeight >= scrollHeight - 2) {
-        activeIdx = anchorElementsRef.current.length - 1;
-      }
-    }
-
-    // Set only one anchor active and sync the URL hash
-    const activeAnchor = anchorElementsRef.current[activeIdx];
-    const sectionId = activeAnchor?.getAttribute(`data-${dataAttribute}-anchor`) || null;
-    setActiveSection(sectionId);
-    // Remove data-active from all others
-    anchorElementsRef.current.forEach((item, idx) => {
-      if (idx !== activeIdx) {
-        item.removeAttribute('data-active');
-      }
-    });
-  }, [anchorElementsRef, targetRef, dataAttribute, offset, setActiveSection]);
-
-  const scrollTo = useCallback(
-    (anchorElement: HTMLElement) => (event?: Event) => {
-      if (event) {
-        event.preventDefault();
-      }
-      const sectionId
-        = anchorElement.getAttribute(`data-${dataAttribute}-anchor`)?.replace('#', '') || null;
-      if (!sectionId) {
-        return;
-      }
-      const sectionElement = document.getElementById(sectionId);
-      if (!sectionElement) {
-        return;
-      }
-
-      const scrollToElement = targetRef?.current === document ? window : targetRef?.current;
-
-      let customOffset = offset;
-      const dataOffset = anchorElement.getAttribute(`data-${dataAttribute}-offset`);
-      if (dataOffset) {
-        customOffset = Number.parseInt(dataOffset, 10);
-      }
-
-      const scrollTop = sectionElement.offsetTop - customOffset;
-
-      if (scrollToElement && 'scrollTo' in scrollToElement) {
-        scrollToElement.scrollTo({
-          top: scrollTop,
-          left: 0,
-          behavior: smooth ? 'smooth' : 'auto',
-        });
-      }
-      setActiveSection(sectionId, true);
-    },
-    [dataAttribute, offset, smooth, targetRef, setActiveSection],
-  );
-
-  // Scroll to the section if the ID is present in the URL hash
-  const scrollToHashSection = useCallback(() => {
-    const hash = CSS.escape(window.location.hash.replace('#', ''));
-
-    if (hash) {
-      const targetElement = document.querySelector(
-        `[data-${dataAttribute}-anchor="${hash}"]`,
-      ) as HTMLElement;
-      if (targetElement) {
-        scrollTo(targetElement)();
-      }
-    }
-  }, [dataAttribute, scrollTo]);
-
+  // Sync the callback ref in an effect (React Compiler compliant)
   useEffect(() => {
-    // Query elements and store them in the ref, avoiding unnecessary re-renders
-    if (selfRef.current) {
-      anchorElementsRef.current = Array.from(
-        selfRef.current.querySelectorAll(`[data-${dataAttribute}-anchor]`),
-      );
+    onUpdateRef.current = onUpdate;
+  });
+
+  // Utility: Get the scroll target element
+  function getScrollTarget(): Window | HTMLElement {
+    const target = targetRef?.current;
+    if (!target || target === document) return window;
+    return target as HTMLElement;
+  }
+
+  // Utility: Get current scroll position
+  function getScrollTop(): number {
+    const target = getScrollTarget();
+
+    if (isHTMLElement(target)) {
+      return target.scrollTop;
     }
 
-    anchorElementsRef.current?.forEach((item) => {
-      item.addEventListener('click', scrollTo(item as HTMLElement));
+    return window.scrollY;
+  }
+
+  // Utility: Get scroll dimensions
+  function getScrollDimensions(): {
+    scrollHeight: number;
+    clientHeight: number;
+  } {
+    const target = getScrollTarget();
+
+    if (isHTMLElement(target)) {
+      return {
+        scrollHeight: target.scrollHeight,
+        clientHeight: target.clientHeight,
+      };
+    }
+
+    return {
+      scrollHeight: document.documentElement.scrollHeight,
+      clientHeight: window.innerHeight,
+    };
+  }
+
+  // Utility: Check if scrolled to bottom
+  function isAtBottom(): boolean {
+    const { scrollHeight, clientHeight } = getScrollDimensions();
+    return getScrollTop() + clientHeight >= scrollHeight - 2;
+  }
+
+  // Utility: Get offset for an anchor
+  function getAnchorOffset(anchor: Element): number {
+    const dataOffset = anchor.getAttribute(`data-${dataAttribute}-offset`);
+    return dataOffset ? parseInt(dataOffset, 10) : offset;
+  }
+
+  // Core: Activate a section by ID
+  function activateSection(sectionId: string | null, forceHashUpdate = false) {
+    if (!sectionId) return;
+
+    const { anchors, prevId } = stateRef.current;
+
+    // Update data-active attributes using toggleAttribute
+    for (const anchor of anchors) {
+      const id = anchor.getAttribute(`data-${dataAttribute}-anchor`);
+      anchor.toggleAttribute("data-active", id === sectionId);
+    }
+
+    // Fire callback
+    onUpdateRef.current?.(sectionId);
+
+    // Update URL hash
+    if (history && (forceHashUpdate || prevId !== sectionId)) {
+      window.history.replaceState(null, "", `#${sectionId}`);
+    }
+
+    stateRef.current.prevId = sectionId;
+  }
+
+  // Core: Find the currently active section
+  function findActiveSection(): string | null {
+    const { anchors } = stateRef.current;
+    if (anchors.length === 0) return null;
+
+    // Edge case: at bottom of container
+    if (isAtBottom()) {
+      const lastAnchor = anchors[anchors.length - 1];
+      return lastAnchor?.getAttribute(`data-${dataAttribute}-anchor`) ?? null;
+    }
+
+    const scrollTop = getScrollTop();
+    let activeIndex = 0;
+    let minDelta = Infinity;
+
+    for (let i = 0; i < anchors.length; i++) {
+      const anchor = anchors[i];
+      if (!anchor) continue;
+
+      const sectionId = anchor.getAttribute(`data-${dataAttribute}-anchor`);
+
+      if (!sectionId) continue;
+
+      const section = document.getElementById(sectionId);
+      if (!section) continue;
+
+      const anchorOffset = getAnchorOffset(anchor);
+      const sectionTop = section.offsetTop - anchorOffset;
+      const delta = Math.abs(sectionTop - scrollTop);
+
+      if (sectionTop <= scrollTop && delta < minDelta) {
+        minDelta = delta;
+        activeIndex = i;
+      }
+    }
+
+    const activeAnchor = anchors[activeIndex];
+    return activeAnchor?.getAttribute(`data-${dataAttribute}-anchor`) ?? null;
+  }
+
+  // Handler: Scroll event
+  function handleScroll() {
+    const activeId = findActiveSection();
+    activateSection(activeId);
+  }
+
+  // Handler: Scroll to a section
+  function scrollToSection(anchor: Element) {
+    const sectionId = anchor
+      .getAttribute(`data-${dataAttribute}-anchor`)
+      ?.replace("#", "");
+
+    if (!sectionId) return;
+
+    const section = document.getElementById(sectionId);
+    if (!section) return;
+
+    const anchorOffset = getAnchorOffset(anchor);
+    const target = getScrollTarget();
+
+    target.scrollTo({
+      top: section.offsetTop - anchorOffset,
+      left: 0,
+      behavior: smooth ? "smooth" : "auto",
     });
 
-    const scrollElement = targetRef?.current === document ? window : targetRef?.current;
+    activateSection(sectionId, true);
+  }
 
-    // Attach the scroll event to the correct scrollable element
-    scrollElement?.addEventListener('scroll', handleScroll);
+  // Handler: Anchor click
+  function handleAnchorClick(event: Event) {
+    event.preventDefault();
+    scrollToSection(event.currentTarget as Element);
+  }
 
-    // Check if there's a hash in the URL and scroll to the corresponding section
-    setTimeout(() => {
-      scrollToHashSection();
-      // Wait for scroll to settle, then update nav highlighting
-      setTimeout(() => {
-        handleScroll();
-      }, 100);
-    }, 100); // Adding a slight delay to ensure content is fully rendered
+  // Handler: Scroll to URL hash
+  function scrollToUrlHash() {
+    const hash = window.location.hash.slice(1);
+    if (!hash) return;
 
+    try {
+      const escapedHash = CSS.escape(hash);
+      const selector = `[data-${dataAttribute}-anchor="${escapedHash}"]`;
+      const anchor = containerRef.current?.querySelector(selector);
+
+      if (anchor) {
+        scrollToSection(anchor);
+      }
+    } catch {
+      // Invalid CSS selector, ignore
+    }
+  }
+
+  // Effect: Setup and teardown
+  useIsomorphicLayoutEffect(() => {
+    const container = containerRef.current;
+    if (!container) return;
+
+    // Query and cache anchor elements
+    const anchors = Array.from(
+      container.querySelectorAll<Element>(`[data-${dataAttribute}-anchor]`)
+    );
+    stateRef.current.anchors = anchors;
+
+    const scrollTarget = getScrollTarget();
+
+    // Attach event listeners
+    for (const anchor of anchors) {
+      anchor.addEventListener("click", handleAnchorClick);
+    }
+
+    scrollTarget.addEventListener("scroll", handleScroll, { passive: true });
+
+    // Initial state handling with requestAnimationFrame for better timing
+    let frameId = requestAnimationFrame(() => {
+      scrollToUrlHash();
+      frameId = requestAnimationFrame(handleScroll);
+    });
+
+    // Cleanup
     return () => {
-      scrollElement?.removeEventListener('scroll', handleScroll);
-      anchorElementsRef.current?.forEach((item) => {
-        item.removeEventListener('click', scrollTo(item as HTMLElement));
-      });
+      cancelAnimationFrame(frameId);
+      scrollTarget.removeEventListener("scroll", handleScroll);
+
+      for (const anchor of anchors) {
+        anchor.removeEventListener("click", handleAnchorClick);
+      }
+
+      stateRef.current.anchors = [];
     };
-  }, [targetRef, selfRef, handleScroll, dataAttribute, scrollTo, scrollToHashSection]);
+  }, [targetRef, dataAttribute, offset, smooth, history]);
 
   return (
-    <div data-slot="scrollspy" className={className} ref={selfRef}>
+    <div data-slot="scrollspy" className={className} ref={containerRef}>
       {children}
     </div>
   );

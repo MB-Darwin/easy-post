@@ -1,9 +1,10 @@
 import { createSessionWithResponse } from "@/shared/lib/auth";
-import { oauthService } from "@/shared/services/auth/oauth.service";
+import { oauthService } from "@/entities/auth/services/oauth.service";
 import { companyService } from "@/shared/services/database";
 import { NextRequest, NextResponse } from "next/server";
 
-const DEFAULT_REDIRECT_URL = process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000";
+const DEFAULT_REDIRECT_URL =
+  process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000";
 
 export async function GET(request: NextRequest) {
   const searchParams = request.nextUrl.searchParams;
@@ -54,7 +55,10 @@ export async function GET(request: NextRequest) {
       // Then set cookies on the response
       await createSessionWithResponse(companyId, response);
 
-      console.log("Session cookies set, redirecting to:", redirectUrl.toString());
+      console.log(
+        "Session cookies set, redirecting to:",
+        redirectUrl.toString()
+      );
 
       return response;
     }
@@ -69,7 +73,9 @@ export async function GET(request: NextRequest) {
       );
     }
 
-    if (!oauthService.validateCallbackParams({ code, companyId, timestamp, hmac })) {
+    if (
+      !oauthService.validateCallbackParams({ code, companyId, timestamp, hmac })
+    ) {
       return NextResponse.json(
         { error: "Invalid OAuth parameters" },
         { status: 400 }
@@ -94,7 +100,6 @@ export async function GET(request: NextRequest) {
     console.log("Session cookies set, redirecting to:", redirectUrl.toString());
 
     return response;
-
   } catch (error) {
     console.error("OAuth callback error:", error);
     return NextResponse.json(

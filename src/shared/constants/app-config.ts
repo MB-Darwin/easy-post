@@ -4,7 +4,7 @@ const localePrefix: LocalePrefixMode = "as-needed";
 
 // FIXME: Update this configuration file based on your project information
 export const APP_CONFIG = {
-  name: "Nextjs Starter",
+  name: "EasyPost",
   locales: ["en", "fr"],
   defaultLocale: "en",
   localePrefix,

@@ -9,7 +9,7 @@ import {
   company,
   type Company,
   type NewCompany,
-} from "../schema/company.schema";
+} from "../schemas/company.schema";
 
 /**
  * Company service class
