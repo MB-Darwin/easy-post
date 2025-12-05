@@ -44,11 +44,8 @@ export async function GET(request: NextRequest) {
         companyId
       );
 
-      // Return success for verification ping
-      return NextResponse.json({
-        success: true,
-        message: "Installation verified",
-      });
+      // Redirect to onboarding page
+      return NextResponse.redirect(new URL("/onboarding", request.url));
     }
 
     // Validate required parameters for full OAuth flow
