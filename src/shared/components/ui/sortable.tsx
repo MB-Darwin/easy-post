@@ -1,4 +1,4 @@
-"use client";
+'use client';
 
 import {
   closestCenter,
@@ -11,7 +11,7 @@ import {
   TouchSensor,
   useSensor,
   useSensors,
-} from "@dnd-kit/core";
+} from '@dnd-kit/core';
 import type {
   Announcements,
   DndContextProps,
@@ -22,12 +22,12 @@ import type {
   DropAnimation,
   ScreenReaderInstructions,
   UniqueIdentifier,
-} from "@dnd-kit/core";
+} from '@dnd-kit/core';
 import {
   restrictToHorizontalAxis,
   restrictToParentElement,
   restrictToVerticalAxis,
-} from "@dnd-kit/modifiers";
+} from '@dnd-kit/modifiers';
 import {
   arrayMove,
   horizontalListSortingStrategy,
@@ -35,15 +35,15 @@ import {
   sortableKeyboardCoordinates,
   useSortable,
   verticalListSortingStrategy,
-} from "@dnd-kit/sortable";
-import type { SortableContextProps } from "@dnd-kit/sortable";
-import { CSS } from "@dnd-kit/utilities";
-import { Slot } from "@radix-ui/react-slot";
-import * as React from "react";
-import * as ReactDOM from "react-dom";
+} from '@dnd-kit/sortable';
+import type { SortableContextProps } from '@dnd-kit/sortable';
+import { CSS } from '@dnd-kit/utilities';
+import { Slot } from '@radix-ui/react-slot';
+import * as React from 'react';
+import * as ReactDOM from 'react-dom';
 
-import { useComposedRefs } from "@/shared/utils/compose-refs";
-import { cn } from "@/shared/utils/cn";
+import { useComposedRefs } from '@/shared/libs/compose-refs';
+import { cn } from '@/shared/utils/cn';
 
 const orientationConfig = {
   vertical: {
@@ -63,11 +63,11 @@ const orientationConfig = {
   },
 };
 
-const ROOT_NAME = "Sortable";
-const CONTENT_NAME = "SortableContent";
-const ITEM_NAME = "SortableItem";
-const ITEM_HANDLE_NAME = "SortableItemHandle";
-const OVERLAY_NAME = "SortableOverlay";
+const ROOT_NAME = 'Sortable';
+const CONTENT_NAME = 'SortableContent';
+const ITEM_NAME = 'SortableItem';
+const ITEM_HANDLE_NAME = 'SortableItemHandle';
+const OVERLAY_NAME = 'SortableOverlay';
 
 // Move SortableOverlayContext before it's used
 const SortableOverlayContext = React.createContext(false);
@@ -76,16 +76,15 @@ SortableOverlayContext.displayName = OVERLAY_NAME;
 type SortableRootContextValue<T> = {
   id: string;
   items: UniqueIdentifier[];
-  modifiers: DndContextProps["modifiers"];
-  strategy: SortableContextProps["strategy"];
+  modifiers: DndContextProps['modifiers'];
+  strategy: SortableContextProps['strategy'];
   activeId: UniqueIdentifier | null;
   setActiveId: (id: UniqueIdentifier | null) => void;
   getItemValue: (item: T) => UniqueIdentifier;
   flatCursor: boolean;
 };
 
-const SortableRootContext =
-  React.createContext<SortableRootContextValue<unknown> | null>(null);
+const SortableRootContext = React.createContext<SortableRootContextValue<unknown> | null>(null);
 SortableRootContext.displayName = ROOT_NAME;
 
 function useSortableContext(consumerName: string) {
@@ -107,11 +106,9 @@ type GetItemValue<T> = {
 type SortableRootProps<T> = DndContextProps & {
   value: T[];
   onValueChange?: (items: T[]) => void;
-  onMove?: (
-    event: DragEndEvent & { activeIndex: number; overIndex: number }
-  ) => void;
-  strategy?: SortableContextProps["strategy"];
-  orientation?: "vertical" | "horizontal" | "mixed";
+  onMove?: (event: DragEndEvent & { activeIndex: number; overIndex: number }) => void;
+  strategy?: SortableContextProps['strategy'];
+  orientation?: 'vertical' | 'horizontal' | 'mixed';
   flatCursor?: boolean;
 } & (T extends object ? GetItemValue<T> : Partial<GetItemValue<T>>);
 
@@ -123,7 +120,7 @@ function SortableRoot<T>(props: SortableRootProps<T>) {
     modifiers,
     strategy,
     onMove,
-    orientation = "vertical",
+    orientation = 'vertical',
     flatCursor = false,
     getItemValue: getItemValueProp,
     accessibility,
@@ -138,7 +135,7 @@ function SortableRoot<T>(props: SortableRootProps<T>) {
     useSensor(TouchSensor),
     useSensor(KeyboardSensor, {
       coordinateGetter: sortableKeyboardCoordinates,
-    })
+    }),
   );
 
   // Fix: Access config directly instead of as a function
@@ -146,14 +143,12 @@ function SortableRoot<T>(props: SortableRootProps<T>) {
 
   const getItemValue = React.useCallback(
     (item: T): UniqueIdentifier => {
-      if (typeof item === "object" && !getItemValueProp) {
-        throw new Error("getItemValue is required when using array of objects");
+      if (typeof item === 'object' && !getItemValueProp) {
+        throw new Error('getItemValue is required when using array of objects');
       }
-      return getItemValueProp
-        ? getItemValueProp(item)
-        : (item as UniqueIdentifier);
+      return getItemValueProp ? getItemValueProp(item) : (item as UniqueIdentifier);
     },
-    [getItemValueProp]
+    [getItemValueProp],
   );
 
   const items = React.useMemo(() => {
@@ -179,12 +174,8 @@ function SortableRoot<T>(props: SortableRootProps<T>) {
 
     const { active, over } = event;
     if (over && active.id !== over?.id) {
-      const activeIndex = value.findIndex(
-        (item) => getItemValue(item) === active.id
-      );
-      const overIndex = value.findIndex(
-        (item) => getItemValue(item) === over.id
-      );
+      const activeIndex = value.findIndex((item) => getItemValue(item) === active.id);
+      const overIndex = value.findIndex((item) => getItemValue(item) === over.id);
 
       if (onMove) {
         onMove({ ...event, activeIndex, overIndex });
@@ -217,13 +208,13 @@ function SortableRoot<T>(props: SortableRootProps<T>) {
         if (over) {
           const overIndex = over.data.current?.sortable.index ?? 0;
           const activeIndex = active.data.current?.sortable.index ?? 0;
-          const moveDirection = overIndex > activeIndex ? "down" : "up";
+          const moveDirection = overIndex > activeIndex ? 'down' : 'up';
           const activeValue = active.id.toString();
           return `Sortable item "${activeValue}" moved ${moveDirection} to position ${
             overIndex + 1
           } of ${value.length}.`;
         }
-        return "Sortable item is no longer over a droppable area. Press escape to cancel.";
+        return 'Sortable item is no longer over a droppable area. Press escape to cancel.';
       },
       onDragEnd({ active, over }) {
         const activeValue = active.id.toString();
@@ -246,16 +237,16 @@ function SortableRoot<T>(props: SortableRootProps<T>) {
         if (over) {
           const overIndex = over.data.current?.sortable.index ?? 0;
           const activeIndex = active.data.current?.sortable.index ?? 0;
-          const moveDirection = overIndex > activeIndex ? "down" : "up";
+          const moveDirection = overIndex > activeIndex ? 'down' : 'up';
           const activeValue = active.id.toString();
           return `Sortable item "${activeValue}" is moving ${moveDirection} to position ${
             overIndex + 1
           } of ${value.length}.`;
         }
-        return "Sortable item is no longer over a droppable area. Press escape to cancel.";
+        return 'Sortable item is no longer over a droppable area. Press escape to cancel.';
       },
     }),
-    [value]
+    [value],
   );
 
   const screenReaderInstructions: ScreenReaderInstructions = React.useMemo(
@@ -263,16 +254,16 @@ function SortableRoot<T>(props: SortableRootProps<T>) {
       draggable: `
         To pick up a sortable item, press space or enter.
         While dragging, use the ${
-          orientation === "vertical"
-            ? "up and down"
-            : orientation === "horizontal"
-            ? "left and right"
-            : "arrow"
+          orientation === 'vertical'
+            ? 'up and down'
+            : orientation === 'horizontal'
+              ? 'left and right'
+              : 'arrow'
         } keys to move the item.
         Press space or enter again to drop the item in its new position, or press escape to cancel.
       `,
     }),
-    [orientation]
+    [orientation],
   );
 
   const contextValue = React.useMemo(
@@ -296,13 +287,11 @@ function SortableRoot<T>(props: SortableRootProps<T>) {
       activeId,
       getItemValue,
       flatCursor,
-    ]
+    ],
   );
 
   return (
-    <SortableRootContext
-      value={contextValue as SortableRootContextValue<unknown>}
-    >
+    <SortableRootContext value={contextValue as SortableRootContextValue<unknown>}>
       <DndContext
         collisionDetection={collisionDetection ?? config.collisionDetection}
         modifiers={modifiers ?? config.modifiers}
@@ -326,11 +315,11 @@ const SortableContentContext = React.createContext<boolean>(false);
 SortableContentContext.displayName = CONTENT_NAME;
 
 type SortableContentProps = {
-  strategy?: SortableContextProps["strategy"];
+  strategy?: SortableContextProps['strategy'];
   children: React.ReactNode;
   asChild?: boolean;
   withoutSlot?: boolean;
-} & React.ComponentPropsWithoutRef<"div">;
+} & React.ComponentPropsWithoutRef<'div'>;
 
 function SortableContent({
   ref: forwardedRef,
@@ -342,22 +331,15 @@ function SortableContent({
 }: SortableContentProps & { ref?: React.RefObject<HTMLDivElement | null> }) {
   const context = useSortableContext(CONTENT_NAME);
 
-  const ContentPrimitive = asChild ? Slot : "div";
+  const ContentPrimitive = asChild ? Slot : 'div';
 
   return (
     <SortableContentContext value={true}>
-      <SortableContext
-        items={context.items}
-        strategy={strategyProp ?? context.strategy}
-      >
+      <SortableContext items={context.items} strategy={strategyProp ?? context.strategy}>
         {withoutSlot ? (
           children
         ) : (
-          <ContentPrimitive
-            data-slot="sortable-content"
-            {...contentProps}
-            ref={forwardedRef}
-          >
+          <ContentPrimitive data-slot="sortable-content" {...contentProps} ref={forwardedRef}>
             {children}
           </ContentPrimitive>
         )}
@@ -376,8 +358,7 @@ type SortableItemContextValue = {
   disabled?: boolean;
 };
 
-const SortableItemContext =
-  React.createContext<SortableItemContextValue | null>(null);
+const SortableItemContext = React.createContext<SortableItemContextValue | null>(null);
 SortableItemContext.displayName = ITEM_NAME;
 
 function useSortableItemContext(consumerName: string) {
@@ -393,7 +374,7 @@ type SortableItemProps = {
   asHandle?: boolean;
   asChild?: boolean;
   disabled?: boolean;
-} & React.ComponentPropsWithoutRef<"div">;
+} & React.ComponentPropsWithoutRef<'div'>;
 
 function SortableItem({
   ref: forwardedRef,
@@ -410,11 +391,11 @@ function SortableItem({
 
   if (!inSortableContent && !inSortableOverlay) {
     throw new Error(
-      `\`${ITEM_NAME}\` must be used within \`${CONTENT_NAME}\` or \`${OVERLAY_NAME}\``
+      `\`${ITEM_NAME}\` must be used within \`${CONTENT_NAME}\` or \`${OVERLAY_NAME}\``,
     );
   }
 
-  if (value === "") {
+  if (value === '') {
     throw new Error(`\`${ITEM_NAME}\` value cannot be an empty string`);
   }
 
@@ -447,7 +428,7 @@ function SortableItem({
       transition,
       ...style,
     }),
-    [transform, transition, style]
+    [transform, transition, style],
   );
 
   const itemContext = React.useMemo<SortableItemContextValue>(
@@ -459,17 +440,17 @@ function SortableItem({
       isDragging,
       disabled,
     }),
-    [id, attributes, listeners, setActivatorNodeRef, isDragging, disabled]
+    [id, attributes, listeners, setActivatorNodeRef, isDragging, disabled],
   );
 
-  const ItemPrimitive = asChild ? Slot : "div";
+  const ItemPrimitive = asChild ? Slot : 'div';
 
   return (
     <SortableItemContext value={itemContext}>
       <ItemPrimitive
         id={id}
         data-disabled={disabled}
-        data-dragging={isDragging ? "" : undefined}
+        data-dragging={isDragging ? '' : undefined}
         data-slot="sortable-item"
         {...itemProps}
         {...(asHandle && !disabled ? attributes : {})}
@@ -477,16 +458,16 @@ function SortableItem({
         ref={composedRef}
         style={composedStyle}
         className={cn(
-          "focus-visible:ring-ring focus-visible:ring-1 focus-visible:ring-offset-1 focus-visible:outline-hidden",
+          'focus-visible:ring-ring focus-visible:ring-1 focus-visible:ring-offset-1 focus-visible:outline-hidden',
           {
-            "touch-none select-none": asHandle,
-            "cursor-default": context.flatCursor,
-            "data-dragging:cursor-grabbing": !context.flatCursor,
-            "cursor-grab": !isDragging && asHandle && !context.flatCursor,
-            "opacity-50": isDragging,
-            "pointer-events-none opacity-50": disabled,
+            'touch-none select-none': asHandle,
+            'cursor-default': context.flatCursor,
+            'data-dragging:cursor-grabbing': !context.flatCursor,
+            'cursor-grab': !isDragging && asHandle && !context.flatCursor,
+            'opacity-50': isDragging,
+            'pointer-events-none opacity-50': disabled,
           },
-          className
+          className,
         )}
       />
     </SortableItemContext>
@@ -496,7 +477,7 @@ SortableItem.displayName = ITEM_NAME;
 
 type SortableItemHandleProps = {
   asChild?: boolean;
-} & React.ComponentPropsWithoutRef<"button">;
+} & React.ComponentPropsWithoutRef<'button'>;
 
 function SortableItemHandle({
   ref: forwardedRef,
@@ -504,9 +485,7 @@ function SortableItemHandle({
   disabled,
   className,
   ...itemHandleProps
-}: SortableItemHandleProps & {
-  ref?: React.RefObject<HTMLButtonElement | null>;
-}) {
+}: SortableItemHandleProps & { ref?: React.RefObject<HTMLButtonElement | null> }) {
   const context = useSortableContext(ITEM_HANDLE_NAME);
   const itemContext = useSortableItemContext(ITEM_HANDLE_NAME);
 
@@ -519,25 +498,23 @@ function SortableItemHandle({
     itemContext.setActivatorNodeRef(node);
   });
 
-  const HandlePrimitive = asChild ? Slot : "button";
+  const HandlePrimitive = asChild ? Slot : 'button';
 
   return (
     <HandlePrimitive
       type="button"
       aria-controls={itemContext.id}
       data-disabled={isDisabled}
-      data-dragging={itemContext.isDragging ? "" : undefined}
+      data-dragging={itemContext.isDragging ? '' : undefined}
       data-slot="sortable-item-handle"
       {...itemHandleProps}
       {...(isDisabled ? {} : itemContext.attributes)}
       {...(isDisabled ? {} : itemContext.listeners)}
       ref={composedRef}
       className={cn(
-        "select-none disabled:pointer-events-none disabled:opacity-50",
-        context.flatCursor
-          ? "cursor-default"
-          : "cursor-grab data-dragging:cursor-grabbing",
-        className
+        'select-none disabled:pointer-events-none disabled:opacity-50',
+        context.flatCursor ? 'cursor-default' : 'cursor-grab data-dragging:cursor-grabbing',
+        className,
       )}
       disabled={isDisabled}
     />
@@ -549,7 +526,7 @@ const dropAnimation: DropAnimation = {
   sideEffects: defaultDropAnimationSideEffects({
     styles: {
       active: {
-        opacity: "0.4",
+        opacity: '0.4',
       },
     },
   }),
@@ -557,10 +534,8 @@ const dropAnimation: DropAnimation = {
 
 type SortableOverlayProps = {
   container?: Element | DocumentFragment | null;
-  children?:
-    | ((params: { value: UniqueIdentifier }) => React.ReactNode)
-    | React.ReactNode;
-} & Omit<React.ComponentPropsWithoutRef<typeof DragOverlay>, "children">;
+  children?: ((params: { value: UniqueIdentifier }) => React.ReactNode) | React.ReactNode;
+} & Omit<React.ComponentPropsWithoutRef<typeof DragOverlay>, 'children'>;
 
 function SortableOverlay({
   container: containerProp,
@@ -573,11 +548,10 @@ function SortableOverlay({
   const mounted = React.useSyncExternalStore(
     () => () => {},
     () => true,
-    () => false
+    () => false,
   );
 
-  const container =
-    containerProp ?? (mounted ? globalThis.document?.body : null);
+  const container = containerProp ?? (mounted ? globalThis.document?.body : null);
 
   if (!container) {
     return null;
@@ -587,18 +561,18 @@ function SortableOverlay({
     <DragOverlay
       dropAnimation={dropAnimation}
       modifiers={context.modifiers}
-      className={cn(!context.flatCursor && "cursor-grabbing")}
+      className={cn(!context.flatCursor && 'cursor-grabbing')}
       {...overlayProps}
     >
       <SortableOverlayContext value={true}>
         {context.activeId
-          ? typeof children === "function"
+          ? typeof children === 'function'
             ? children({ value: context.activeId })
             : children
           : null}
       </SortableOverlayContext>
     </DragOverlay>,
-    container
+    container,
   );
 }
 SortableOverlay.displayName = OVERLAY_NAME;
