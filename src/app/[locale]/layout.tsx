@@ -6,6 +6,7 @@ import { hasLocale } from "next-intl";
 import { notFound } from "next/navigation";
 import { setRequestLocale } from "next-intl/server";
 import RootProvider from "@/shared/providers";
+import { getAuthenticatedCompany } from "@/shared/lib/auth";
 
 export const metadata: Metadata = {
   icons: [
@@ -51,6 +52,7 @@ export default async function RootLayout(props: {
   params: Promise<{ locale: string }>;
 }) {
   const { locale } = await props.params;
+  const company = await getAuthenticatedCompany();
 
   if (!hasLocale(routing.locales, locale)) {
     notFound();
@@ -63,7 +65,7 @@ export default async function RootLayout(props: {
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
-        <RootProvider>{props.children}</RootProvider>
+        <RootProvider company={company}>{props.children}</RootProvider>
       </body>
     </html>
   );

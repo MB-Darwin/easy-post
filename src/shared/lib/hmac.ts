@@ -1,74 +1,50 @@
-/**
- * HMAC Verification Utility
- * Validates HMAC signatures from Genuka OAuth callbacks
- */
+import { serverEnv } from "../env/server-env";
 
-import crypto from "crypto";
-import { serverEnv } from "@/shared/env/server-env";
+export const generateHmac = async (params: {
+  code: string;
+  company_id: string;
+  redirect_to: string;
+  timestamp: string;
+}): Promise<string> => {
+  const sortedKeys = Object.keys(params).sort();
 
-/**
- * Verify HMAC signature from Genuka OAuth callback
- * The HMAC is calculated over all query parameters EXCEPT the hmac parameter itself
- * IMPORTANT: Must preserve exact URL encoding (don't decode/re-encode)
- * @param queryString - The RAW query string from the request (exactly as received)
- * @param hmacToVerify - HMAC signature to validate
- * @returns True if signature is valid
- */
-export async function verifyHmac(
-  queryString: string,
-  hmacToVerify: string
-): Promise<boolean> {
-  try {
-    // Manually parse query string WITHOUT decoding to preserve exact encoding
-    const params: Array<[string, string]> = [];
-    const pairs = queryString.split("&");
+  const queryString = sortedKeys
+    .map(
+      (key) =>
+        `${encodeURIComponent(key)}=${encodeURIComponent(
+          params[key as keyof typeof params]
+        )}`
+    )
+    .join("&");
 
-    for (const pair of pairs) {
-      const eqIndex = pair.indexOf("=");
-      if (eqIndex > 0) {
-        const key = pair.substring(0, eqIndex);
-        const value = pair.substring(eqIndex + 1);
+  const encoder = new TextEncoder();
+  const key = await crypto.subtle.importKey(
+    "raw",
+    encoder.encode(serverEnv.GENUKA_CLIENT_SECRET),
+    { name: "HMAC", hash: "SHA-256" },
+    false,
+    ["sign"]
+  );
 
-        // Skip the hmac parameter itself
-        if (key !== "hmac") {
-          params.push([key, value]);
-        }
-      }
-    }
+  const signature = await crypto.subtle.sign(
+    "HMAC",
+    key,
+    encoder.encode(queryString)
+  );
+  return Array.from(new Uint8Array(signature))
+    .map((b) => b.toString(16).padStart(2, "0"))
+    .join("");
+};
 
-    // Sort alphabetically by key
-    params.sort(([a], [b]) => a.localeCompare(b));
-
-    // Build the string with exact encoding preserved
-    const sortedParams = params
-      .map(([key, value]) => `${key}=${value}`)
-      .join("&");
-
-    console.log("HMAC Debug:");
-    console.log("- Original query:", queryString);
-    console.log("- Sorted params (without hmac):", sortedParams);
-    console.log(
-      "- Client secret (first 10 chars):",
-      serverEnv.GENUKA_CLIENT_SECRET.substring(0, 10) + "..."
-    );
-    console.log("- Received HMAC:", hmacToVerify);
-
-    // Calculate HMAC using client secret
-    const calculatedHmac = crypto
-      .createHmac("sha256", serverEnv.GENUKA_CLIENT_SECRET)
-      .update(sortedParams)
-      .digest("hex");
-
-    console.log("- Calculated HMAC:", calculatedHmac);
-    console.log("- Match:", calculatedHmac === hmacToVerify);
-
-    // Constant-time comparison to prevent timing attacks
-    return crypto.timingSafeEqual(
-      Buffer.from(calculatedHmac, "hex"),
-      Buffer.from(hmacToVerify, "hex")
-    );
-  } catch (error) {
-    console.error("HMAC verification error:", error);
-    return false;
-  }
-}
+export const verifyHmac = async (
+  params: {
+    code: string;
+    company_id: string;
+    redirect_to: string;
+    timestamp: string;
+  },
+  receivedHmac: string
+): Promise<boolean> => {
+  const expectedHmac = await generateHmac(params);
+  return expectedHmac === receivedHmac;
+};

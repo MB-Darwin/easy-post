@@ -1,54 +1,48 @@
-/**
- * Next.js Middleware - Auth Protection
- * Checks for auth cookies and redirects to /unauthorized if not authenticated
- */
+import { NextRequest, NextResponse } from "next/server";
 
-import { NextResponse } from "next/server";
-import type { NextRequest } from "next/server";
+const SESSION_COOKIE_NAME = "session";
 
-export function proxy(request: NextRequest) {
+export async function proxy(request: NextRequest) {
   const { pathname } = request.nextUrl;
 
-  // Get auth cookies
-  const authToken = request.cookies.get("auth_token");
-  const refreshToken = request.cookies.get("refresh_token");
+  const protectedRoutes = ["/"];
 
-  // Check if user is authenticated
-  const isAuthenticated = !!(authToken && refreshToken);
-
-  // Public routes that don't require authentication
-  const publicRoutes = ["/", "/auth/callback", "/unauthorized", "/api/auth"];
-
-  // Check if current path is public
-  const isPublicRoute = publicRoutes.some((route) =>
+  const isProtectedRoute = protectedRoutes.some((route) =>
     pathname.startsWith(route)
   );
 
-  // Allow public routes
-  if (isPublicRoute) {
-    return NextResponse.next();
+  if (isProtectedRoute) {
+    const token = request.cookies.get(SESSION_COOKIE_NAME)?.value;
+
+    if (!token) {
+      return NextResponse.redirect(new URL("/unauthorized", request.url));
+    }
+
+    try {
+      const secret = new TextEncoder().encode(
+        process.env.GENUKA_CLIENT_SECRET!
+      );
+      const { jwtVerify } = await import("jose");
+      await jwtVerify(token, secret);
+    } catch (error) {
+      console.error("JWT verification failed in middleware:", error);
+      return NextResponse.redirect(new URL("/unauthorized", request.url));
+    }
   }
 
-  // Redirect to /unauthorized if not authenticated
-  if (!isAuthenticated) {
-    console.log("⚠️ Unauthenticated access attempt to:", pathname);
-    return NextResponse.redirect(new URL("/unauthorized", request.url));
-  }
-
-  // User is authenticated, allow access
   return NextResponse.next();
 }
 
-// Configure which routes to run middleware on
 export const config = {
   matcher: [
     /*
      * Match all request paths except:
+     * - api routes
      * - _next/static (static files)
      * - _next/image (image optimization files)
      * - favicon.ico (favicon file)
-     * - public files (images, etc.)
+     * - Files with extensions
      */
-    "/((?!_next/static|_next/image|favicon.ico|.*\\.(?:svg|png|jpg|jpeg|gif|webp)$).*)",
+    "/((?!api|_next/static|_next/image|favicon.ico|.*\\..*).*)",
   ],
 };

@@ -1,1 +1,1 @@
-export * from "@/entities/auth/schema/auth.schema"
+export * from "@/entities/company/schema/company.schema";

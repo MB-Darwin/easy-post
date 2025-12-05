@@ -4,7 +4,7 @@
 
 import { os } from "@orpc/server";
 import { z } from "zod";
-import { oauthService } from "@/shared/services/oauth.service";
+import { oauthService } from "@/shared/services/auth/oauth.service";
 
 /**
  * Zod Schemas (from contract)

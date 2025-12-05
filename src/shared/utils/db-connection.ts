@@ -1,8 +1,8 @@
-import { drizzle } from 'drizzle-orm/node-postgres';
-import { Pool } from 'pg';
+import { drizzle } from "drizzle-orm/node-postgres";
+import { Pool } from "pg";
 
-import * as schema from '@/shared/db/schemas';
-import { serverEnv } from '@/shared/env/server-env';
+import * as schema from "@/shared/db/schemas";
+import { serverEnv } from "@/shared/env/server-env";
 
 // Need a database for production? Just claim it by running `npm run neon:claim`.
 // Tested and compatible with Next.js Boilerplate
