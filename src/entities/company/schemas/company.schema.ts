@@ -54,11 +54,10 @@ export const company = createTable(
   "company",
   (d) => ({
     id: d.text("id").primaryKey().notNull(),
-    name: d.text("name").notNull(),
     categoryId: d
       .uuid("category_id")
-      .notNull()
       .references(() => category.id, { onDelete: "cascade" }),
+    name: d.text("name").notNull(),
     handle: d.text("handle"),
     description: d.text("description"),
     logoUrl: d.text("logo_url"),
@@ -82,6 +81,25 @@ export const company = createTable(
     index("company_handle_idx").on(table.handle),
     index("company_name_idx").on(table.name),
   ]
+);
+
+export const workspace = createTable(
+  "workspace",
+  (d) => ({
+    id: d.uuid("id").primaryKey().defaultRandom(),
+    companyId: d
+      .text("company_id")
+      .notNull()
+      .references(() => company.id, { onDelete: "cascade" }),
+    posts: d
+      .uuid("posts_id")
+      .references(() => posts.id, { onDelete: "cascade" }),
+    name: d.text("name").notNull(),
+    description: d.text("description"),
+    createdAt: d.timestamp("created_at").defaultNow().notNull(),
+    updatedAt: d.timestamp("updated_at").defaultNow().notNull(), // Add this
+  }),
+  (table) => []
 );
 
 export const socialAccounts = createTable(
@@ -156,11 +174,7 @@ export const permission = createTable(
     createdAt: d.timestamp("created_at").defaultNow().notNull(),
     updatedAt: d.timestamp("updated_at").defaultNow().notNull(), // Add this
   }),
-  (table) => [
-    index("permission_category_id_idx").on(table.categoryId),
-    index("permission_name_idx").on(table.name),
-    unique("permission_name_unique").on(table.name),
-  ]
+  (table) => []
 );
 
 export const postAccounts = createTable(
