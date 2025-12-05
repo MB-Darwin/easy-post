@@ -37,21 +37,30 @@ export class CompanyService {
    * @returns Upserted company
    */
   async upsert(data: NewCompany): Promise<Company> {
+    const now = new Date();
+
+    console.log("Upserting company", data);
+
     const [upsertedCompany] = await db
       .insert(company)
-      .values(data)
+      .values({
+        ...data,
+        updatedAt: now,
+        createdAt: data.createdAt ?? now,
+      })
       .onConflictDoUpdate({
         target: company.id,
         set: {
-          name: data.name,
-          handle: data.handle,
-          description: data.description,
-          logoUrl: data.logoUrl,
-          accessToken: data.accessToken,
-          refreshToken: data.refreshToken,
-          tokenExpiresAt: data.tokenExpiresAt,
-          metadata: data.metadata,
-          updatedAt: new Date(),
+          id: data.id,
+          handle: data.handle ?? null,
+          description: data.description ?? null,
+          logoUrl: data.logoUrl ?? null,
+          phone: data.phone ?? null,
+          accessToken: data.accessToken ?? null,
+          refreshToken: data.refreshToken ?? null,
+          tokenExpiresAt: data.tokenExpiresAt ?? null,
+          metadata: data.metadata ?? {},
+          updatedAt: now,
         },
       })
       .returning();
@@ -94,28 +103,6 @@ export class CompanyService {
   }
 
   /**
-   * Find companies by name (exact match)
-   * @param name - Company name
-   * @returns Array of companies
-   */
-  async findByName(name: string): Promise<Company[]> {
-    return await db.select().from(company).where(eq(company.name, name));
-  }
-
-  /**
-   * Search companies by name (partial match)
-   * @param searchTerm - Search term for company name
-   * @returns Array of matching companies
-   */
-  async searchByName(searchTerm: string): Promise<Company[]> {
-    return await db
-      .select()
-      .from(company)
-      .where(like(company.name, `%${searchTerm}%`))
-      .orderBy(asc(company.name));
-  }
-
-  /**
    * Get all companies with pagination
    * @param options - Pagination options
    * @returns Array of companies
@@ -123,7 +110,7 @@ export class CompanyService {
   async findAll(options?: {
     limit?: number;
     offset?: number;
-    orderBy?: "name" | "createdAt" | "updatedAt";
+    orderBy?: "id" | "createdAt" | "updatedAt";
     order?: "asc" | "desc";
   }): Promise<Company[]> {
     const limit = options?.limit ?? 50;
@@ -132,7 +119,7 @@ export class CompanyService {
     const orderDirection = options?.order ?? "desc";
 
     const orderByColumn = {
-      name: company.name,
+      id: company.id,
       createdAt: company.createdAt,
       updatedAt: company.updatedAt,
     }[orderField];

@@ -1,4 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
+import { routing } from "@/shared/i18n/routing";
+import createMiddleware from "next-intl/middleware";
 
 const SESSION_COOKIE_NAME = "session";
 
@@ -32,6 +34,8 @@ export async function proxy(request: NextRequest) {
 
   return NextResponse.next();
 }
+
+export default createMiddleware(routing);
 
 export const config = {
   matcher: [

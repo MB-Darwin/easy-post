@@ -8,12 +8,14 @@ import { index } from "drizzle-orm/pg-core";
 export const company = createTable(
   "company",
   (d) => ({
-    id: id(),
+    id: d.text("id").primaryKey().notNull(),
     name: d.text("name").notNull(),
     handle: d.text("handle"),
     description: d.text("description"),
     logoUrl: d.text("logo_url"),
     phone: d.text("phone"),
+
+    isFirstLogin: d.boolean("is_First_Login").default(true),
 
     // OAuth tokens
     accessToken: d.text("access_token"),

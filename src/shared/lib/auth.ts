@@ -1,8 +1,8 @@
 import { JWTPayload, SignJWT, jwtVerify } from "jose";
 import { cookies } from "next/headers";
+import { NextResponse } from "next/server";
 import { serverEnv } from "../env/server-env";
 import { companyService } from "../services/database";
-
 // Cookie names
 const SESSION_COOKIE_NAME = "session";
 const REFRESH_COOKIE_NAME = "refresh_session";
@@ -21,14 +21,10 @@ function getSecret() {
 }
 
 /**
- * Create both session and refresh cookies for a company
- * Double cookie pattern for secure session management
- * @param companyId
- * @returns
+ * Generate session and refresh tokens (without setting cookies)
  */
-export async function createSession(companyId: string) {
+export async function generateTokens(companyId: string) {
   const secret = getSecret();
-  const isProd = serverEnv.NODE_ENV === "production";
 
   // Create session token (short-lived: 7h)
   const sessionToken = await new SignJWT({ companyId, type: "session" })
@@ -43,6 +39,61 @@ export async function createSession(companyId: string) {
     .setIssuedAt()
     .setExpirationTime("30d")
     .sign(secret);
+
+  return { sessionToken, refreshToken };
+}
+
+/**
+ * Set session cookies on a NextResponse object
+ * Use this when redirecting from API routes
+ */
+export function setSessionCookies(
+  response: NextResponse,
+  sessionToken: string,
+  refreshToken: string
+) {
+  const isProd = serverEnv.NODE_ENV === "production";
+
+  // Set session cookie (7h)
+  response.cookies.set(SESSION_COOKIE_NAME, sessionToken, {
+    httpOnly: true,
+    secure: isProd,
+    sameSite: "lax",
+    maxAge: SESSION_MAX_AGE,
+    path: "/",
+  });
+
+  // Set refresh cookie (30 days)
+  response.cookies.set(REFRESH_COOKIE_NAME, refreshToken, {
+    httpOnly: true,
+    secure: isProd,
+    sameSite: "lax",
+    maxAge: REFRESH_MAX_AGE,
+    path: "/",
+  });
+
+  return response;
+}
+
+/**
+ * Create session and set cookies on a NextResponse
+ * Returns the response with cookies set
+ */
+export async function createSessionWithResponse(
+  companyId: string,
+  response: NextResponse
+): Promise<NextResponse> {
+  const { sessionToken, refreshToken } = await generateTokens(companyId);
+  return setSessionCookies(response, sessionToken, refreshToken);
+}
+
+/**
+ * Create both session and refresh cookies for a company
+ * Use this in Server Components or Server Actions (NOT in API routes with redirects)
+ */
+export async function createSession(companyId: string) {
+  const { sessionToken, refreshToken } = await generateTokens(companyId);
+  const isProd = serverEnv.NODE_ENV === "production";
 
   const cookieStore = await cookies();
 

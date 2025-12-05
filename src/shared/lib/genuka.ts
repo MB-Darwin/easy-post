@@ -13,7 +13,10 @@ export interface TokenResponse {
 const httpsAgent = new https.Agent({ family: 4 });
 
 export async function initializeGenuka(companyId: string) {
-  return await Genuka.initialize({ id: companyId });
+  return await Genuka.initialize({
+    id: companyId,
+    apiBaseUrl: serverEnv.GENUKA_API_URL,
+  });
 }
 
 export async function exchangeCodeForToken(
