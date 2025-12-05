@@ -1,4 +1,4 @@
-import { createdAt, createTable, id, updatedAt } from "@/shared/utils";
+import { createdAt, createTable, updatedAt } from "@/shared/utils";
 import { index } from "drizzle-orm/pg-core";
 
 /**

@@ -6,7 +6,7 @@
 "use client";
 
 import { useAuthStore } from "@/entities/auth/store/use-auth.store";
-import { useRefreshToken } from "@/features/auth/api/auth.mutations";
+// import { useRefreshToken } from "@/features/auth/api/auth.mutations";
 import { useEffect } from "react";
 
 /**
@@ -14,14 +14,15 @@ import { useEffect } from "react";
  */
 export function useAuth() {
   const auth = useAuthStore();
-  const refreshTokenMutation = useRefreshToken();
+  // const refreshTokenMutation = useRefreshToken();
 
   // Auto-refresh token if expired
   useEffect(() => {
     if (auth.isAuthenticated && auth.isTokenExpired() && auth.refreshToken) {
-      refreshTokenMutation.mutate(auth.refreshToken);
+      console.log("Token expired, but auto-refresh is temporarily disabled.");
+      // refreshTokenMutation.mutate(auth.refreshToken);
     }
-  }, [auth, refreshTokenMutation]);
+  }, [auth]);
 
   // Listen for unauthorized events from API client
   useEffect(() => {

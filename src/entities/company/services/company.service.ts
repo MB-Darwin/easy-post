@@ -3,7 +3,7 @@
  * Handles all database operations for companies using Drizzle ORM
  */
 
-import { eq, and, like, desc, asc, sql, gte, lte } from "drizzle-orm";
+import { eq, and, desc, asc, sql, gte, lte } from "drizzle-orm";
 import { db } from "@/shared/db";
 import {
   company,

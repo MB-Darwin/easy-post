@@ -2,11 +2,9 @@
 
 import { routing } from "@/shared/i18n/routing";
 import NextError from "next/error";
-import { useEffect } from "react";
+// import { useEffect } from "react";
 
-export default function GlobalError(props: {
-  error: Error & { digest?: string };
-}) {
+export default function GlobalError() {
   return (
     <html lang={routing.defaultLocale}>
       <body>
