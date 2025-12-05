@@ -1,149 +1,163 @@
-'use client';
+import { useFieldContext } from "@/shared/hooks/use-app-form";
+import type { ReactNode } from "react";
+import { Field } from "./field";
+import { Input } from "./input";
+import { Textarea } from "./textarea";
+import { Checkbox } from "@radix-ui/react-checkbox";
+import { Select } from "./select";
 
-import type * as LabelPrimitive from '@radix-ui/react-label';
-import { Slot } from '@radix-ui/react-slot';
-import * as React from 'react';
-import { Controller, FormProvider, useFormContext, useFormState } from 'react-hook-form';
-import type { ControllerProps, FieldPath, FieldValues } from 'react-hook-form';
-
-import { Label } from '@/shared/components/ui/label';
-import { cn } from '@/shared/utils/cn';
-
-type FormFieldContextValue<
-  TFieldValues extends FieldValues = FieldValues,
-  TName extends FieldPath<TFieldValues> = FieldPath<TFieldValues>,
-> = {
-  name: TName;
+// Base Form Control Props
+export type FormControlProps = {
+  label: string;
+  description?: string;
+  placeholder?: string;
+  type?: "text" | "email" | "password" | "textarea" | "checkbox" | "select";
 };
 
-const FormFieldContext = React.createContext<FormFieldContextValue>({} as FormFieldContextValue);
-
-const FormField = <
-  TFieldValues extends FieldValues = FieldValues,
-  TName extends FieldPath<TFieldValues> = FieldPath<TFieldValues>,
->({
-  ...props
-}: ControllerProps<TFieldValues, TName>) => {
-  const value = React.useMemo(() => ({ name: props.name }), [props.name]);
-
-  return (
-    <FormFieldContext value={value}>
-      <Controller {...props} />
-    </FormFieldContext>
-  );
+// Base Form Component
+type FormBaseProps = FormControlProps & {
+  children: ReactNode;
+  horizontal?: boolean;
+  controlFirst?: boolean;
 };
 
-type FormItemContextValue = {
-  id: string;
-};
+function Base({
+  children,
+  label,
+  description,
+  controlFirst,
+  horizontal,
+}: FormBaseProps) {
+  const field = useFieldContext();
+  const isInvalid = field.state.meta.isTouched && !field.state.meta.isValid;
 
-const FormItemContext = React.createContext<FormItemContextValue>({} as FormItemContextValue);
-
-const useFormField = () => {
-  const fieldContext = React.use(FormFieldContext);
-  const itemContext = React.use(FormItemContext);
-  const { getFieldState } = useFormContext();
-  const formState = useFormState({ name: fieldContext.name });
-  const fieldState = getFieldState(fieldContext.name, formState);
-
-  if (!fieldContext) {
-    throw new Error('useFormField should be used within <FormField>');
-  }
-
-  const { id } = itemContext;
-
-  return {
-    id,
-    name: fieldContext.name,
-    formItemId: `${id}-form-item`,
-    formDescriptionId: `${id}-form-item-description`,
-    formMessageId: `${id}-form-item-message`,
-    ...fieldState,
-  };
-};
-
-function FormItem({ className, ...props }: React.ComponentProps<'div'>) {
-  const id = React.useId();
-  const value = React.useMemo(() => ({ id }), [id]);
-
-  return (
-    <FormItemContext value={value}>
-      <div data-slot="form-item" className={cn('grid gap-2', className)} {...props} />
-    </FormItemContext>
+  const labelElement = (
+    <>
+      <Field.Label htmlFor={field.name}>{label}</Field.Label>
+      {description && <Field.Description>{description}</Field.Description>}
+    </>
   );
-}
 
-function FormLabel({ className, ...props }: React.ComponentProps<typeof LabelPrimitive.Root>) {
-  const { error, formItemId } = useFormField();
-
-  return (
-    <Label
-      data-slot="form-label"
-      data-error={!!error}
-      className={cn('data-[error=true]:text-destructive', className)}
-      htmlFor={formItemId}
-      {...props}
-    />
+  const errorElem = isInvalid && (
+    <Field.Error errors={field.state.meta.errors} />
   );
-}
-
-function FormControl({ ...props }: React.ComponentProps<typeof Slot>) {
-  const { error, formItemId, formDescriptionId, formMessageId } = useFormField();
 
   return (
-    <Slot
-      data-slot="form-control"
-      id={formItemId}
-      aria-describedby={!error ? `${formDescriptionId}` : `${formDescriptionId} ${formMessageId}`}
-      aria-invalid={!!error}
-      {...props}
-    />
-  );
-}
-
-function FormDescription({ className, ...props }: React.ComponentProps<'p'>) {
-  const { formDescriptionId } = useFormField();
-
-  return (
-    <p
-      data-slot="form-description"
-      id={formDescriptionId}
-      className={cn('text-muted-foreground text-sm', className)}
-      {...props}
-    />
-  );
-}
-
-function FormMessage({ className, ...props }: React.ComponentProps<'p'>) {
-  const { error, formMessageId } = useFormField();
-  const body = error ? String(error?.message ?? '') : props.children;
-
-  if (!body) {
-    return null;
-  }
-
-  return (
-    <p
-      data-slot="form-message"
-      id={formMessageId}
-      className={cn('text-destructive text-sm', className)}
-      {...props}
+    <Field
+      data-invalid={isInvalid}
+      orientation={horizontal ? "horizontal" : undefined}
     >
-      {body}
-    </p>
+      {controlFirst ? (
+        <>
+          {children}
+          <Field.Content>
+            {labelElement}
+            {errorElem}
+          </Field.Content>
+        </>
+      ) : (
+        <>
+          <Field.Content>{labelElement}</Field.Content>
+          {children}
+          {errorElem}
+        </>
+      )}
+    </Field>
   );
 }
 
-const FormRoot = FormProvider;
+// Input Component
+function InputField(props: FormControlProps) {
+  const field = useFieldContext<string>();
+  const isInvalid = field.state.meta.isTouched && !field.state.meta.isValid;
 
-const FormNamespace = Object.assign(FormRoot, {
-  Item: FormItem,
-  Label: FormLabel,
-  Control: FormControl,
-  Description: FormDescription,
-  Message: FormMessage,
-  Field: FormField,
-  useField: useFormField,
+  return (
+    <Base {...props}>
+      <Input
+        id={field.name}
+        name={field.name}
+        placeholder={props.placeholder}
+        type={props.type}
+        value={field.state.value}
+        onBlur={field.handleBlur}
+        onChange={(e) => field.handleChange(e.target.value)}
+        aria-invalid={isInvalid}
+      />
+    </Base>
+  );
+}
+
+// Textarea Component
+function TextareaField(props: FormControlProps) {
+  const field = useFieldContext<string>();
+  const isInvalid = field.state.meta.isTouched && !field.state.meta.isValid;
+
+  return (
+    <Base {...props}>
+      <Textarea
+        id={field.name}
+        name={field.name}
+        placeholder={props.placeholder}
+        value={field.state.value}
+        onBlur={field.handleBlur}
+        onChange={(e) => field.handleChange(e.target.value)}
+        aria-invalid={isInvalid}
+      />
+    </Base>
+  );
+}
+
+// Checkbox Component
+function CheckboxField(props: FormControlProps) {
+  const field = useFieldContext<boolean>();
+  const isInvalid = field.state.meta.isTouched && !field.state.meta.isValid;
+
+  return (
+    <Base {...props} controlFirst horizontal>
+      <Checkbox
+        id={field.name}
+        name={field.name}
+        checked={field.state.value}
+        onBlur={field.handleBlur}
+        onCheckedChange={(e) => field.handleChange(e === true)}
+        aria-invalid={isInvalid}
+      />
+    </Base>
+  );
+}
+
+// Select Component
+type SelectFieldProps = FormControlProps & {
+  children: ReactNode;
+};
+
+function SelectField({ children, ...props }: SelectFieldProps) {
+  const field = useFieldContext<string>();
+  const isInvalid = field.state.meta.isTouched && !field.state.meta.isValid;
+
+  return (
+    <Base {...props}>
+      <Select
+        onValueChange={(e) => field.handleChange(e)}
+        value={field.state.value}
+      >
+        <Select.Trigger
+          aria-invalid={isInvalid}
+          id={field.name}
+          onBlur={field.handleBlur}
+        >
+          <Select.Value />
+        </Select.Trigger>
+        <Select.Content>{children}</Select.Content>
+      </Select>
+    </Base>
+  );
+}
+
+// Compound Export
+export const Form = Object.assign(Base, {
+  Input: InputField,
+  Textarea: TextareaField,
+  Checkbox: CheckboxField,
+  Select: SelectField,
 });
-
-export { FormNamespace as Form, useFormField };
