@@ -1,10 +1,10 @@
 "use client";
 
-import { DropdownMenu, Sidebar, useSidebar } from "@/shared/components";
 import { Folder, Forward, MoreHorizontal, Trash2 } from "lucide-react";
 import type { AppAbility } from "./ability";
 import type { ProjectItem, Permission } from "./sidebar-data";
 import { NavBadge } from "./nav-badge";
+import { DropdownMenu, Sidebar, useSidebar } from "@/shared/components";
 
 interface NavProjectsProps {
   projects: ProjectItem[];
