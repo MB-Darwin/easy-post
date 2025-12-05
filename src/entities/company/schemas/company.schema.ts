@@ -72,7 +72,7 @@ export const company = createTable(
     tokenExpiresAt: d.timestamp("token_expires_at"),
 
     // Additional metadata from Genuka API
-    metadata: d.jsonb("metadata"),
+    metadata: d.jsonb("metadata").$type<Record<string, unknown>>(),
 
     // Timestamps
     createdAt,
@@ -81,83 +81,107 @@ export const company = createTable(
   (table) => [
     index("company_handle_idx").on(table.handle),
     index("company_name_idx").on(table.name),
-    unique("company_handle_unique").on(table.handle),
   ]
 );
 
-export const socialAccounts = pgTable("social_accounts", {
-  id: uuid("id").primaryKey().defaultRandom(),
-  companyId: uuid("company_id")
-    .notNull()
-    .references(() => company.id, { onDelete: "cascade" }),
-  platform: socialPlatformEnum("platform").notNull(),
-  platformAccountId: text("platform_account_id").notNull(),
-  username: text("username").notNull(),
-  displayName: text("display_name"),
-  profilePicture: text("profile_picture"),
-  accessToken: text("access_token").notNull(),
-  refreshToken: text("refresh_token"),
-  tokenExpiresAt: timestamp("token_expires_at"),
-  lastSyncedAt: timestamp("last_synced_at"), // ajout
-  status: accountStatusEnum("status").default("active").notNull(),
-  metadata: jsonb("metadata"),
-  createdAt: timestamp("created_at").defaultNow().notNull(),
-  updatedAt: timestamp("updated_at").defaultNow().notNull(),
-});
+export const socialAccounts = createTable(
+  "social_accounts",
+  (d) => ({
+    id: d.uuid("id").primaryKey().defaultRandom(),
+    companyId: d
+      .text("company_id")
+      .notNull()
+      .references(() => company.id, { onDelete: "cascade" }),
+    platform: socialPlatformEnum("platform").notNull(),
+    platformAccountId: d.text("platform_account_id").notNull(),
+    username: d.text("username").notNull(),
+    displayName: d.text("display_name"),
+    profilePicture: d.text("profile_picture"),
+    accessToken: d.text("access_token").notNull(),
+    refreshToken: d.text("refresh_token"),
+    tokenExpiresAt: d.timestamp("token_expires_at"),
+    lastSyncedAt: d.timestamp("last_synced_at"), // ajout
+    status: accountStatusEnum("status").default("active").notNull(),
+    metadata: d.jsonb("metadata"),
+    createdAt: d.timestamp("created_at").defaultNow().notNull(),
+    updatedAt: d.timestamp("updated_at").defaultNow().notNull(),
+  }),
+  (table) => []
+);
 
-export const category = pgTable("category", {
-  id: uuid("id").primaryKey().defaultRandom(),
-  name: varchar("name"),
-  decription: text("decription").notNull(),
-  createdAt: timestamp("created_at").defaultNow().notNull(),
-  updatedAt: timestamp("updated_at").defaultNow().notNull(), // Add this
-});
+export const category = createTable(
+  "category",
+  (d) => ({
+    id: d.uuid("id").primaryKey().defaultRandom(),
+    name: d.varchar("name"),
+    decription: d.text("decription").notNull(),
+    createdAt: d.timestamp("created_at").defaultNow().notNull(),
+    updatedAt: d.timestamp("updated_at").defaultNow().notNull(), // Add this
+  }),
+  (table) => []
+);
 
-export const posts = pgTable("posts", {
-  id: uuid("id").primaryKey().defaultRandom(),
-  companyId: uuid("company_id")
-    .notNull()
-    .references(() => company.id, { onDelete: "cascade" }),
-  title: text("title"), // ajout
-  content: text("content").notNull(),
-  type: postType("type").default("PUBLICATION").notNull(),
-  status: postStatusEnum("status").default("draft").notNull(),
-  scheduledAt: timestamp("scheduled_at"),
-  publishedAt: timestamp("published_at"),
-  media: jsonb("media"), // Array of media URLs and metadata
-  metadata: jsonb("metadata"),
-  createdAt: timestamp("created_at").defaultNow().notNull(),
-  updatedAt: timestamp("updated_at").defaultNow().notNull(),
-});
+export const posts = createTable(
+  "posts",
+  (d) => ({
+    id: d.uuid("id").primaryKey().defaultRandom(),
+    companyId: d
+      .text("company_id")
+      .notNull()
+      .references(() => company.id, { onDelete: "cascade" }),
+    title: d.text("title"), // ajout
+    content: d.text("content").notNull(),
+    type: postType("type").default("PUBLICATION").notNull(),
+    status: postStatusEnum("status").default("draft").notNull(),
+    scheduledAt: d.timestamp("scheduled_at"),
+    publishedAt: d.timestamp("published_at"),
+    media: d.jsonb("media"), // Array of media URLs and metadata
+    metadata: d.jsonb("metadata"),
+    createdAt: d.timestamp("created_at").defaultNow().notNull(),
+    updatedAt: d.timestamp("updated_at").defaultNow().notNull(),
+  }),
+  (table) => []
+);
 
-export const permission = pgTable("permission", {
-  id: uuid("id").primaryKey().defaultRandom(),
-  categoryId: uuid("category_id")
-    .notNull()
-    .references(() => category.id, { onDelete: "cascade" }),
-  name: varchar("name").unique(),
-  decription: text("decription").notNull(),
-  createdAt: timestamp("created_at").defaultNow().notNull(),
-  updatedAt: timestamp("updated_at").defaultNow().notNull(), // Add this
-});
+export const permission = createTable(
+  "permission",
+  (d) => ({
+    id: d.uuid("id").primaryKey().defaultRandom(),
+    categoryId: d
+      .uuid("category_id")
+      .notNull()
+      .references(() => category.id, { onDelete: "cascade" }),
+    name: d.varchar("name").unique(),
+    decription: d.text("decription").notNull(),
+    createdAt: d.timestamp("created_at").defaultNow().notNull(),
+    updatedAt: d.timestamp("updated_at").defaultNow().notNull(), // Add this
+  }),
+  (table) => [
+    index("permission_category_id_idx").on(table.categoryId),
+    index("permission_name_idx").on(table.name),
+    unique("permission_name_unique").on(table.name),
+  ]
+);
 
-export const postAccounts = pgTable(
+export const postAccounts = createTable(
   "post_accounts",
-  {
-    id: uuid("id").primaryKey().defaultRandom(),
-    postId: uuid("post_id")
+  (d) => ({
+    id: d.uuid("id").primaryKey().defaultRandom(),
+    postId: d
+      .uuid("post_id")
       .notNull()
       .references(() => posts.id, { onDelete: "cascade" }),
-    accountId: uuid("account_id")
+    accountId: d
+      .uuid("account_id")
       .notNull()
       .references(() => socialAccounts.id, { onDelete: "cascade" }),
-    platformPostId: text("platform_post_id"),
+    platformPostId: d.text("platform_post_id"),
     status: postStatusEnum("status").default("scheduled").notNull(),
-    error: text("error"),
-    retryCount: integer("retry_count").default(0), // ajout
-    publishedAt: timestamp("published_at"),
-    createdAt: timestamp("created_at").defaultNow().notNull(),
-  },
+    error: d.text("error"),
+    retryCount: d.integer("retry_count").default(0), // ajout
+    publishedAt: d.timestamp("published_at"),
+    createdAt: d.timestamp("created_at").defaultNow().notNull(),
+  }),
   (table) => [
     index("post_accounts_post_id_idx").on(table.postId),
     index("post_accounts_account_id_idx").on(table.accountId),
@@ -165,20 +189,25 @@ export const postAccounts = pgTable(
   ]
 );
 
-export const analytics = pgTable("analytics", {
-  id: uuid("id").primaryKey().defaultRandom(),
-  postAccountId: uuid("post_account_id")
-    .notNull()
-    .references(() => postAccounts.id, { onDelete: "cascade" }),
-  likes: integer("likes").default(0),
-  comments: integer("comments").default(0),
-  shares: integer("shares").default(0),
-  views: integer("views").default(0),
-  rawData: jsonb("raw_data"),
-  fetchedAt: timestamp("fetched_at").defaultNow().notNull(),
-  createdAt: timestamp("created_at").defaultNow().notNull(),
-  updatedAt: timestamp("updated_at").defaultNow().notNull(), // Add this
-});
+export const analytics = createTable(
+  "analytics",
+  (d) => ({
+    id: d.uuid("id").primaryKey().defaultRandom(),
+    postAccountId: d
+      .uuid("post_account_id")
+      .notNull()
+      .references(() => postAccounts.id, { onDelete: "cascade" }),
+    likes: d.integer("likes").default(0),
+    comments: d.integer("comments").default(0),
+    shares: d.integer("shares").default(0),
+    views: d.integer("views").default(0),
+    rawData: d.jsonb("raw_data"),
+    fetchedAt: d.timestamp("fetched_at").defaultNow().notNull(),
+    createdAt: d.timestamp("created_at").defaultNow().notNull(),
+    updatedAt: d.timestamp("updated_at").defaultNow().notNull(), // Add this
+  }),
+  (table) => []
+);
 
 // =====================
 // Relations
