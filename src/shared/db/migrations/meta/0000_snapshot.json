@@ -1,11 +1,11 @@
 {
-  "id": "746bd7ca-a831-4ada-b03f-51d6392c2b6d",
+  "id": "508ee67b-32e4-4896-a524-ae2bedebdddf",
   "prevId": "00000000-0000-0000-0000-000000000000",
   "version": "7",
   "dialect": "postgresql",
   "tables": {
-    "public.analytics": {
-      "name": "analytics",
+    "public.ep_analytics": {
+      "name": "ep_analytics",
       "schema": "",
       "columns": {
         "id": {
@@ -79,10 +79,10 @@
       },
       "indexes": {},
       "foreignKeys": {
-        "analytics_post_account_id_post_accounts_id_fk": {
-          "name": "analytics_post_account_id_post_accounts_id_fk",
-          "tableFrom": "analytics",
-          "tableTo": "post_accounts",
+        "ep_analytics_post_account_id_ep_post_accounts_id_fk": {
+          "name": "ep_analytics_post_account_id_ep_post_accounts_id_fk",
+          "tableFrom": "ep_analytics",
+          "tableTo": "ep_post_accounts",
           "columnsFrom": [
             "post_account_id"
           ],
@@ -99,8 +99,8 @@
       "checkConstraints": {},
       "isRLSEnabled": false
     },
-    "public.category": {
-      "name": "category",
+    "public.ep_category": {
+      "name": "ep_category",
       "schema": "",
       "columns": {
         "id": {
@@ -159,7 +159,7 @@
           "name": "category_id",
           "type": "uuid",
           "primaryKey": false,
-          "notNull": true
+          "notNull": false
         },
         "name": {
           "name": "name",
@@ -270,10 +270,10 @@
         }
       },
       "foreignKeys": {
-        "ep_company_category_id_category_id_fk": {
-          "name": "ep_company_category_id_category_id_fk",
+        "ep_company_category_id_ep_category_id_fk": {
+          "name": "ep_company_category_id_ep_category_id_fk",
           "tableFrom": "ep_company",
-          "tableTo": "category",
+          "tableTo": "ep_category",
           "columnsFrom": [
             "category_id"
           ],
@@ -290,8 +290,8 @@
       "checkConstraints": {},
       "isRLSEnabled": false
     },
-    "public.permission": {
-      "name": "permission",
+    "public.ep_permission": {
+      "name": "ep_permission",
       "schema": "",
       "columns": {
         "id": {
@@ -336,10 +336,10 @@
       },
       "indexes": {},
       "foreignKeys": {
-        "permission_category_id_category_id_fk": {
-          "name": "permission_category_id_category_id_fk",
-          "tableFrom": "permission",
-          "tableTo": "category",
+        "ep_permission_category_id_ep_category_id_fk": {
+          "name": "ep_permission_category_id_ep_category_id_fk",
+          "tableFrom": "ep_permission",
+          "tableTo": "ep_category",
           "columnsFrom": [
             "category_id"
           ],
@@ -352,8 +352,8 @@
       },
       "compositePrimaryKeys": {},
       "uniqueConstraints": {
-        "permission_name_unique": {
-          "name": "permission_name_unique",
+        "ep_permission_name_unique": {
+          "name": "ep_permission_name_unique",
           "nullsNotDistinct": false,
           "columns": [
             "name"
@@ -364,8 +364,8 @@
       "checkConstraints": {},
       "isRLSEnabled": false
     },
-    "public.post_accounts": {
-      "name": "post_accounts",
+    "public.ep_post_accounts": {
+      "name": "ep_post_accounts",
       "schema": "",
       "columns": {
         "id": {
@@ -461,10 +461,10 @@
         }
       },
       "foreignKeys": {
-        "post_accounts_post_id_posts_id_fk": {
-          "name": "post_accounts_post_id_posts_id_fk",
-          "tableFrom": "post_accounts",
-          "tableTo": "posts",
+        "ep_post_accounts_post_id_ep_posts_id_fk": {
+          "name": "ep_post_accounts_post_id_ep_posts_id_fk",
+          "tableFrom": "ep_post_accounts",
+          "tableTo": "ep_posts",
           "columnsFrom": [
             "post_id"
           ],
@@ -474,10 +474,10 @@
           "onDelete": "cascade",
           "onUpdate": "no action"
         },
-        "post_accounts_account_id_social_accounts_id_fk": {
-          "name": "post_accounts_account_id_social_accounts_id_fk",
-          "tableFrom": "post_accounts",
-          "tableTo": "social_accounts",
+        "ep_post_accounts_account_id_ep_social_accounts_id_fk": {
+          "name": "ep_post_accounts_account_id_ep_social_accounts_id_fk",
+          "tableFrom": "ep_post_accounts",
+          "tableTo": "ep_social_accounts",
           "columnsFrom": [
             "account_id"
           ],
@@ -503,8 +503,8 @@
       "checkConstraints": {},
       "isRLSEnabled": false
     },
-    "public.posts": {
-      "name": "posts",
+    "public.ep_posts": {
+      "name": "ep_posts",
       "schema": "",
       "columns": {
         "id": {
@@ -589,9 +589,9 @@
       },
       "indexes": {},
       "foreignKeys": {
-        "posts_company_id_ep_company_id_fk": {
-          "name": "posts_company_id_ep_company_id_fk",
-          "tableFrom": "posts",
+        "ep_posts_company_id_ep_company_id_fk": {
+          "name": "ep_posts_company_id_ep_company_id_fk",
+          "tableFrom": "ep_posts",
           "tableTo": "ep_company",
           "columnsFrom": [
             "company_id"
@@ -609,8 +609,8 @@
       "checkConstraints": {},
       "isRLSEnabled": false
     },
-    "public.social_accounts": {
-      "name": "social_accounts",
+    "public.ep_social_accounts": {
+      "name": "ep_social_accounts",
       "schema": "",
       "columns": {
         "id": {
@@ -712,9 +712,9 @@
       },
       "indexes": {},
       "foreignKeys": {
-        "social_accounts_company_id_ep_company_id_fk": {
-          "name": "social_accounts_company_id_ep_company_id_fk",
-          "tableFrom": "social_accounts",
+        "ep_social_accounts_company_id_ep_company_id_fk": {
+          "name": "ep_social_accounts_company_id_ep_company_id_fk",
+          "tableFrom": "ep_social_accounts",
           "tableTo": "ep_company",
           "columnsFrom": [
             "company_id"
