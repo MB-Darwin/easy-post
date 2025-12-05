@@ -131,6 +131,9 @@ importers:
       date-fns:
         specifier: ^4.1.0
         version: 4.1.0
+      dotenv:
+        specifier: ^17.2.3
+        version: 17.2.3
       drizzle-orm:
         specifier: ^0.45.0
         version: 0.45.0(@neondatabase/serverless@https://codeload.github.com/neondatabase/serverless/tar.gz/2c51902827a043df0646caf6a5ed8d812e7fb9b6)(@types/pg@8.15.6)(kysely@0.28.8)(pg@8.16.3)

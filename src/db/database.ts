@@ -1,6 +1,6 @@
 import { createdAt, createTable, id, updatedAt } from "@/shared/utils";
 import { relations } from "drizzle-orm";
-import { index, integer, jsonb, pgEnum, pgTable, text, timestamp, unique, uuid, varchar } from "drizzle-orm/pg-core";
+import { index, integer, jsonb, pgEnum, pgTable, text, timestamp, unique, uuid } from "drizzle-orm/pg-core";
 
 /**
  * Company table schema
@@ -8,13 +8,13 @@ import { index, integer, jsonb, pgEnum, pgTable, text, timestamp, unique, uuid, 
  */
 
 export const socialPlatformEnum = pgEnum("social_platform", [
-  "facebook",
-  "instagram",
-  "threads",
-  "tiktok",
-  "linkedin",
-  "twitter",
-  "discord",
+    "facebook",
+    "instagram",
+    "threads",
+    "tiktok",
+    "linkedin",
+    "twitter",
+    "discord",
 ]);
 
 export const postStatusEnum = pgEnum("post_status", [
@@ -39,9 +39,6 @@ export const company = createTable(
   (d) => ({
     id: id(),
     name: d.text("name").notNull(),
-    categoryId: d.uuid("category_id")
-    .notNull()
-    .references(() => category.id, { onDelete: "cascade" }),
     handle: d.text("handle"),
     description: d.text("description"),
     logoUrl: d.text("logo_url"),
@@ -84,16 +81,11 @@ export const socialAccounts = pgTable("social_accounts", {
   metadata: jsonb("metadata"),
   createdAt: timestamp("created_at").defaultNow().notNull(),
   updatedAt: timestamp("updated_at").defaultNow().notNull(),
-});
-
-export const category = pgTable("category", {
-  id: uuid("id").primaryKey().defaultRandom(),
-  name: varchar("name"),
-  decription: text("decription").notNull(),
-  createdAt: timestamp("created_at").defaultNow().notNull(),
-  updatedAt: timestamp("updated_at").defaultNow().notNull(), // Add this
-});
-
+},(table) => [
+  index("social_accounts_company_id_idx").on(table.companyId),
+  index("posts_status_idx").on(table.status),
+  index("posts_scheduled_at_idx").on(table.status),
+]);
 
 export const posts = pgTable("posts", {
   id: uuid("id").primaryKey().defaultRandom(),
@@ -110,18 +102,12 @@ export const posts = pgTable("posts", {
   metadata: jsonb("metadata"),
   createdAt: timestamp("created_at").defaultNow().notNull(),
   updatedAt: timestamp("updated_at").defaultNow().notNull(),
-});
+}, (table) => [
+  index("posts_company_id_idx").on(table.companyId),
+  index("posts_status_idx").on(table.status),
+  index("posts_scheduled_at_idx").on(table.scheduledAt),
+]);
 
-export const permission = pgTable("permission", {
-  id: uuid("id").primaryKey().defaultRandom(),
-  categoryId: uuid("category_id")
-    .notNull()
-    .references(() => category.id, { onDelete: "cascade" }),
-  name: varchar("name").unique(),
-  decription: text("decription").notNull(),
-  createdAt: timestamp("created_at").defaultNow().notNull(),
-  updatedAt: timestamp("updated_at").defaultNow().notNull(), // Add this
-});
 
 export const postAccounts = pgTable("post_accounts", {
   id: uuid("id").primaryKey().defaultRandom(),
@@ -138,10 +124,12 @@ export const postAccounts = pgTable("post_accounts", {
   publishedAt: timestamp("published_at"),
   createdAt: timestamp("created_at").defaultNow().notNull(),
 }, (table) => [
-    index("post_accounts_post_id_idx").on(table.postId),
-    index("post_accounts_account_id_idx").on(table.accountId),
-    unique("post_accounts_unique").on(table.postId, table.accountId),
+  index("post_accounts_post_id_idx").on(table.postId),
+  index("post_accounts_account_id_idx").on(table.accountId),
+  unique("post_accounts_unique").on(table.postId, table.accountId), // Prevent duplicate associations
 ]);
+
+
 
 export const analytics = pgTable("analytics", {
   id: uuid("id").primaryKey().defaultRandom(),
@@ -161,22 +149,13 @@ export const analytics = pgTable("analytics", {
 // =====================
 // Relations
 // =====================
-export const companyRelations = relations(company, ({ one, many }) => ({
-  category: one(category, {
-    fields: [company.categoryId],
-    references: [category.id],
-  }),
+export const companyRelation = relations(company, ({ many }) => ({
   socialAccounts: many(socialAccounts),
   posts: many(posts),
 }));
 
-export const categoryRelations = relations(category, ({ many }) => ({
-  companies: many(company),
-  permissions: many(permission),
-}));
-
 export const socialAccountsRelations = relations(socialAccounts, ({ one, many }) => ({
-  company: one(company, {
+  user: one(company, {
     fields: [socialAccounts.companyId],
     references: [company.id],
   }),
@@ -223,11 +202,6 @@ export type Post = typeof posts.$inferSelect;
 export type NewPost = typeof posts.$inferInsert;
 export type PostAccount = typeof postAccounts.$inferSelect;
 export type NewPostAccount = typeof postAccounts.$inferInsert;
-export type Category = typeof category.$inferSelect;
-export type NewCategory = typeof category.$inferInsert;
-
-export type permissions = typeof permission.$inferSelect;
-export type Newpermissions = typeof permission.$inferInsert;
 
 export type CompanySelect = typeof company.$inferSelect;
 export type CompanyInsert = typeof company.$inferInsert;
@@ -235,3 +209,6 @@ export type CompanyUpdate = Partial<CompanyInsert>;
 
 export type Company = CompanySelect;
 export type NewCompany = CompanyInsert;
+
+export type Analytics = typeof analytics.$inferSelect;
+export type NewAnalytics = typeof analytics.$inferInsert;
