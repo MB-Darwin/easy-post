@@ -1,5 +1,5 @@
 {
-  "id": "b1cc50ad-a7d9-4b3c-8652-81a6f2cc8f1d",
+  "id": "746bd7ca-a831-4ada-b03f-51d6392c2b6d",
   "prevId": "00000000-0000-0000-0000-000000000000",
   "version": "7",
   "dialect": "postgresql",
@@ -151,20 +151,19 @@
       "columns": {
         "id": {
           "name": "id",
-          "type": "uuid",
-          "primaryKey": true,
-          "notNull": true,
-          "default": "gen_random_uuid()"
-        },
-        "name": {
-          "name": "name",
           "type": "text",
-          "primaryKey": false,
+          "primaryKey": true,
           "notNull": true
         },
         "category_id": {
           "name": "category_id",
           "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "name": {
+          "name": "name",
+          "type": "text",
           "primaryKey": false,
           "notNull": true
         },
@@ -191,6 +190,13 @@
           "type": "text",
           "primaryKey": false,
           "notNull": false
+        },
+        "is_First_Login": {
+          "name": "is_First_Login",
+          "type": "boolean",
+          "primaryKey": false,
+          "notNull": false,
+          "default": true
         },
         "access_token": {
           "name": "access_token",
@@ -279,15 +285,7 @@
         }
       },
       "compositePrimaryKeys": {},
-      "uniqueConstraints": {
-        "company_handle_unique": {
-          "name": "company_handle_unique",
-          "nullsNotDistinct": false,
-          "columns": [
-            "handle"
-          ]
-        }
-      },
+      "uniqueConstraints": {},
       "policies": {},
       "checkConstraints": {},
       "isRLSEnabled": false
@@ -518,7 +516,7 @@
         },
         "company_id": {
           "name": "company_id",
-          "type": "uuid",
+          "type": "text",
           "primaryKey": false,
           "notNull": true
         },
@@ -624,7 +622,7 @@
         },
         "company_id": {
           "name": "company_id",
-          "type": "uuid",
+          "type": "text",
           "primaryKey": false,
           "notNull": true
         },
