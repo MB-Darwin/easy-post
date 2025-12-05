@@ -9,8 +9,8 @@ import { notFound } from "next/navigation";
 import { setRequestLocale } from "next-intl/server";
 import { getAuthenticatedCompany } from "@/shared/lib/auth";
 import Preloader from "@/shared/components/preloader";
-import { ReactQueryProvider } from "@/shared/providers/react-query-provider";
 import { CompanyProvider } from "@/entities/company/providers/company-provider";
+import { Toaster } from "sonner";
 
 export const metadata: Metadata = {
   // Your existing metadata setup
@@ -33,6 +33,11 @@ export const metadata: Metadata = {
 };
 
 import { sfPro } from "@/shared/fonts";
+import {
+  ModalProvider,
+  ModalRegistry,
+  ReactQueryProvider,
+} from "@/shared/providers";
 
 // ... imports
 
@@ -49,6 +54,8 @@ import { sfPro } from "@/shared/fonts";
 export function generateStaticParams() {
   return routing.locales.map((locale) => ({ locale }));
 }
+
+const registry: ModalRegistry = {};
 
 export default async function RootLayout(props: {
   children: React.ReactNode;
@@ -71,7 +78,9 @@ export default async function RootLayout(props: {
           <Preloader>
             <ReactQueryProvider>
               <CompanyProvider company={company}>
+                <Toaster />
                 {props.children}
+                <ModalProvider registry={registry} />
               </CompanyProvider>
             </ReactQueryProvider>
           </Preloader>

@@ -13,21 +13,21 @@ import {
   Settings2,
   SquareTerminal,
 } from "lucide-react";
-import type { AppUser, Actions, Subjects } from "./ability";
+import type { AppUser, AppAction, AppSubject } from "./ability";
 
-export type NavBadge = "new" | "deprecated" | "error" | "updated" | "warning";
+export type NavStatus = "new" | "deprecated" | "error" | "updated" | "warning";
 
-export interface NavPermission {
-  action: Actions;
-  subject: Subjects;
+export interface Permission {
+  action: AppAction;
+  subject: AppSubject;
 }
 
 export interface NavSubItem {
   id: string;
   title: string;
   url: string;
-  permission?: NavPermission;
-  badge?: NavBadge;
+  status?: NavStatus;
+  permission?: Permission;
 }
 
 export interface NavItem {
@@ -35,33 +35,35 @@ export interface NavItem {
   title: string;
   url?: string;
   icon?: LucideIcon;
-  permission?: NavPermission;
-  badge?: NavBadge;
+  status?: NavStatus;
+  permission?: Permission;
   items?: NavSubItem[];
 }
 
-export interface ProjectNavItem {
+export interface ProjectItem {
   id: string;
   name: string;
   url: string;
   icon: LucideIcon;
-  permission?: NavPermission;
-  badge?: NavBadge;
+  status?: NavStatus;
+  permission?: Permission;
 }
 
 export interface SidebarData {
   user: AppUser;
   teams: {
     name: string;
-    logo: React.ElementType;
+    logo: LucideIcon;
     plan: string;
   }[];
   navMain: NavItem[];
-  projects: ProjectNavItem[];
+  projects: ProjectItem[];
 }
 
+// Sample data
 export const sidebarData: SidebarData = {
   user: {
+    id: "1",
     name: "shadcn",
     email: "m@example.com",
     avatar: "/avatars/shadcn.jpg",
@@ -90,14 +92,14 @@ export const sidebarData: SidebarData = {
       title: "Playground",
       url: "#",
       icon: SquareTerminal,
-      badge: "new",
+      status: "new",
       permission: { action: "view", subject: "Playground" },
       items: [
         {
           id: "playground-history",
           title: "History",
           url: "#",
-          badge: "updated",
+          status: "updated",
         },
         {
           id: "playground-starred",
@@ -108,7 +110,7 @@ export const sidebarData: SidebarData = {
           id: "playground-settings",
           title: "Settings",
           url: "#",
-          badge: "warning",
+          status: "warning",
         },
       ],
     },
@@ -128,13 +130,13 @@ export const sidebarData: SidebarData = {
           id: "models-explorer",
           title: "Explorer",
           url: "#",
-          badge: "new",
+          status: "new",
         },
         {
           id: "models-quantum",
           title: "Quantum",
           url: "#",
-          badge: "deprecated",
+          status: "deprecated",
         },
       ],
     },
@@ -152,7 +154,7 @@ export const sidebarData: SidebarData = {
           id: "docs-changelog",
           title: "Changelog",
           url: "#",
-          badge: "updated",
+          status: "updated",
         },
       ],
     },
@@ -169,7 +171,7 @@ export const sidebarData: SidebarData = {
           id: "settings-billing",
           title: "Billing",
           url: "#",
-          badge: "error",
+          status: "error",
         },
         { id: "settings-limits", title: "Limits", url: "#" },
       ],
@@ -181,24 +183,24 @@ export const sidebarData: SidebarData = {
       name: "Design Engineering",
       url: "#",
       icon: Frame,
-      permission: { action: "view", subject: "Project" },
-      badge: "updated",
+      status: "updated",
+      permission: { action: "view", subject: "Projects" },
     },
     {
       id: "proj-sales",
       name: "Sales & Marketing",
       url: "#",
       icon: PieChart,
-      permission: { action: "view", subject: "Project" },
-      badge: "new",
+      status: "new",
+      permission: { action: "view", subject: "Projects" },
     },
     {
       id: "proj-travel",
       name: "Travel",
       url: "#",
       icon: Map,
-      permission: { action: "view", subject: "Project" },
-      badge: "warning",
+      status: "warning",
+      permission: { action: "view", subject: "Projects" },
     },
   ],
 };

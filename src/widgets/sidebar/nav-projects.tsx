@@ -3,17 +3,17 @@
 import { DropdownMenu, Sidebar, useSidebar } from "@/shared/components";
 import { Folder, Forward, MoreHorizontal, Trash2 } from "lucide-react";
 import type { AppAbility } from "./ability";
-import type { ProjectNavItem, NavPermission } from "./sidebar-data";
-import { NavItemBadge } from "./nav-item-badge";
+import type { ProjectItem, Permission } from "./sidebar-data";
+import { NavBadge } from "./nav-badge";
 
 interface NavProjectsProps {
-  projects: ProjectNavItem[];
+  projects: ProjectItem[];
   ability: AppAbility;
   activeProjectId: string | null;
   onProjectClick: (id: string) => void;
 }
 
-function canView(ability: AppAbility, permission?: NavPermission): boolean {
+function canView(ability: AppAbility, permission?: Permission): boolean {
   if (!permission) return true;
   return ability.can(permission.action, permission.subject);
 }
@@ -49,7 +49,7 @@ export function NavProjects({
                   >
                     <item.icon />
                     <span className="flex-1 truncate">{item.name}</span>
-                    {item.badge && <NavItemBadge status={item.badge} />}
+                    {item.status && <NavBadge status={item.status} />}
                   </a>
                 </Sidebar.MenuButton>
 

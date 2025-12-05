@@ -1,8 +1,3 @@
-/**
- * React Query oRPC Provider
- * Integrates oRPC with React Query for type-safe data fetching
- */
-
 "use client";
 
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";

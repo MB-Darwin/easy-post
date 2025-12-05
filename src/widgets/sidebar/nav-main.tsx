@@ -3,8 +3,8 @@
 import { Collapsible, Sidebar } from "@/shared/components";
 import { ChevronRight } from "lucide-react";
 import type { AppAbility } from "./ability";
-import type { NavItem, NavPermission } from "./sidebar-data";
-import { NavItemBadge } from "./nav-item-badge";
+import type { NavItem, Permission } from "./sidebar-data";
+import { NavBadge } from "./nav-badge";
 
 interface NavMainProps {
   items: NavItem[];
@@ -15,7 +15,7 @@ interface NavMainProps {
   onSubItemClick: (subId: string, parentId: string) => void;
 }
 
-function canView(ability: AppAbility, permission?: NavPermission): boolean {
+function canView(ability: AppAbility, permission?: Permission): boolean {
   if (!permission) return true;
   return ability.can(permission.action, permission.subject);
 }
@@ -56,9 +56,10 @@ export function NavMain({
                       }
                     >
                       {item.icon && <item.icon />}
+
                       <span className="flex-1">{item.title}</span>
 
-                      {item.badge && <NavItemBadge status={item.badge} />}
+                      {item.status && <NavBadge status={item.status} />}
 
                       <ChevronRight className="ml-1 transition-transform duration-200 group-data-[state=open]/collapsible:rotate-90" />
                     </Sidebar.MenuButton>
@@ -87,8 +88,8 @@ export function NavMain({
                                     }
                                   >
                                     <span className="flex-1">{sub.title}</span>
-                                    {sub.badge && (
-                                      <NavItemBadge status={sub.badge} />
+                                    {sub.status && (
+                                      <NavBadge status={sub.status} />
                                     )}
                                   </a>
                                 </Sidebar.MenuSubButton>

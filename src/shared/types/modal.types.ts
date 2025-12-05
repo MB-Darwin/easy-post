@@ -9,6 +9,7 @@ export type ModalOptions = {
   showCloseButton?: boolean;
   className?: string;
   keepOpenOnReload?: boolean;
+  serverParams?: Record<string, unknown>;
   input?: unknown;
 };
 

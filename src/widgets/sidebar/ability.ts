@@ -1,17 +1,25 @@
-import { Ability, AbilityBuilder, type AbilityClass } from "@casl/ability";
+// app/(dashboard)/_components/sidebar/ability.ts
 
-export type Actions = "view" | "manage";
-export type Subjects =
+import {
+  AbilityBuilder,
+  createMongoAbility,
+  type MongoAbility,
+} from "@casl/ability";
+
+export type AppAction = "view" | "manage";
+export type AppSubject =
   | "Playground"
   | "Models"
   | "Documentation"
   | "Settings"
-  | "Project"
+  | "Projects"
   | "all";
 
-export type AppAbility = Ability<[Actions, Subjects]>;
+// Use MongoAbility instead of PureAbility/Ability
+export type AppAbility = MongoAbility<[AppAction, AppSubject]>;
 
 export interface AppUser {
+  id: string;
   name: string;
   email: string;
   avatar: string;
@@ -19,25 +27,30 @@ export interface AppUser {
 }
 
 export function defineAbilityFor(user: AppUser): AppAbility {
-  const { can, build } = new AbilityBuilder<AppAbility>(
-    Ability as AbilityClass<AppAbility>
+  // Use createMongoAbility as the ability factory
+  const { can, /* cannot, */ build } = new AbilityBuilder<AppAbility>(
+    createMongoAbility
   );
 
   switch (user.role) {
-    case "admin":
+    case "admin": {
       can("manage", "all");
       break;
-    case "editor":
+    }
+    case "editor": {
       can("view", "Playground");
       can("view", "Models");
       can("view", "Documentation");
-      can("view", "Project");
+      can("view", "Settings");
+      can("view", "Projects");
       break;
+    }
     case "viewer":
-    default:
+    default: {
       can("view", "Playground");
       can("view", "Documentation");
       break;
+    }
   }
 
   return build();

@@ -9,10 +9,12 @@ import { NavUser } from "./nav-user";
 import { sidebarData } from "./sidebar-data";
 import { defineAbilityFor } from "./ability";
 
-export function AppSidebar(props: React.ComponentProps<typeof Sidebar>) {
-  const ability = React.useMemo(() => defineAbilityFor(sidebarData.user), []);
+const ability = defineAbilityFor(sidebarData.user);
 
-  const [activeItemId, setActiveItemId] = React.useState<string | null>(null);
+export function AppSidebar(props: React.ComponentProps<typeof Sidebar>) {
+  const [activeItemId, setActiveItemId] = React.useState<string | null>(
+    sidebarData.navMain[0]?.id ?? null
+  );
   const [activeSubItemId, setActiveSubItemId] = React.useState<string | null>(
     null
   );
@@ -32,7 +34,10 @@ export function AppSidebar(props: React.ComponentProps<typeof Sidebar>) {
           ability={ability}
           activeItemId={activeItemId}
           activeSubItemId={activeSubItemId}
-          onItemClick={setActiveItemId}
+          onItemClick={(id) => {
+            setActiveItemId(id);
+            setActiveSubItemId(null);
+          }}
           onSubItemClick={(subId, parentId) => {
             setActiveItemId(parentId);
             setActiveSubItemId(subId);
