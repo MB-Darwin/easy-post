@@ -13,8 +13,17 @@ export default async function proxy(request: NextRequest) {
   const localePattern = /^\/(en|fr)(\/|$)/;
   const pathWithoutLocale = pathname.replace(localePattern, "/");
 
+  // Redirect root to /console
+  if (pathWithoutLocale === "/") {
+    const locale = pathname.match(localePattern)?.[1];
+    const redirectPath = locale ? `/${locale}/console` : "/console";
+    const url = request.nextUrl.clone();
+    url.pathname = redirectPath;
+    return Response.redirect(url);
+  }
+
   // Protect /console and everything after
-  const isProtectedRoute = pathWithoutLocale.startsWith("/console");
+  const isProtectedRoute = pathWithoutLocale.startsWith("/dash");
 
   if (isProtectedRoute) {
     const token = request.cookies.get(SESSION_COOKIE_NAME)?.value;
