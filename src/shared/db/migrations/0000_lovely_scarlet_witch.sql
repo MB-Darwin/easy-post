@@ -25,20 +25,20 @@ CREATE TABLE "category" (
 );
 --> statement-breakpoint
 CREATE TABLE "ep_company" (
-	"id" uuid PRIMARY KEY DEFAULT gen_random_uuid() NOT NULL,
-	"name" text NOT NULL,
+	"id" text PRIMARY KEY NOT NULL,
 	"category_id" uuid NOT NULL,
+	"name" text NOT NULL,
 	"handle" text,
 	"description" text,
 	"logo_url" text,
 	"phone" text,
+	"is_First_Login" boolean DEFAULT true,
 	"access_token" text,
 	"refresh_token" text,
 	"token_expires_at" timestamp,
 	"metadata" jsonb,
 	"created_at" timestamp with time zone DEFAULT now() NOT NULL,
-	"updated_at" timestamp with time zone DEFAULT now() NOT NULL,
-	CONSTRAINT "company_handle_unique" UNIQUE("handle")
+	"updated_at" timestamp with time zone DEFAULT now() NOT NULL
 );
 --> statement-breakpoint
 CREATE TABLE "permission" (
@@ -66,7 +66,7 @@ CREATE TABLE "post_accounts" (
 --> statement-breakpoint
 CREATE TABLE "posts" (
 	"id" uuid PRIMARY KEY DEFAULT gen_random_uuid() NOT NULL,
-	"company_id" uuid NOT NULL,
+	"company_id" text NOT NULL,
 	"title" text,
 	"content" text NOT NULL,
 	"type" "post_type" DEFAULT 'PUBLICATION' NOT NULL,
@@ -81,7 +81,7 @@ CREATE TABLE "posts" (
 --> statement-breakpoint
 CREATE TABLE "social_accounts" (
 	"id" uuid PRIMARY KEY DEFAULT gen_random_uuid() NOT NULL,
-	"company_id" uuid NOT NULL,
+	"company_id" text NOT NULL,
 	"platform" "social_platform" NOT NULL,
 	"platform_account_id" text NOT NULL,
 	"username" text NOT NULL,
