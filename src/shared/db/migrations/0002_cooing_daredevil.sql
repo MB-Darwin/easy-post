@@ -1,0 +1,1 @@
+ALTER TABLE "ep_company" ADD PRIMARY KEY ("id");

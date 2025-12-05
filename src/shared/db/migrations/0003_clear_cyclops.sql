@@ -1,0 +1,1 @@
+ALTER TABLE "ep_company" ADD COLUMN "is_First_Login" boolean DEFAULT true;
