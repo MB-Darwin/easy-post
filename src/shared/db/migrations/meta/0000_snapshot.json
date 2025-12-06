@@ -1,5 +1,5 @@
 {
-  "id": "508ee67b-32e4-4896-a524-ae2bedebdddf",
+  "id": "5e17e58b-ad18-4c98-a1e4-c9dfd2fb0f5b",
   "prevId": "00000000-0000-0000-0000-000000000000",
   "version": "7",
   "dialect": "postgresql",
@@ -116,8 +116,8 @@
           "primaryKey": false,
           "notNull": false
         },
-        "decription": {
-          "name": "decription",
+        "description": {
+          "name": "description",
           "type": "text",
           "primaryKey": false,
           "notNull": true
@@ -313,8 +313,8 @@
           "primaryKey": false,
           "notNull": false
         },
-        "decription": {
-          "name": "decription",
+        "description": {
+          "name": "description",
           "type": "text",
           "primaryKey": false,
           "notNull": true
@@ -360,6 +360,72 @@
           ]
         }
       },
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
+    },
+    "public.ep_permission_category": {
+      "name": "ep_permission_category",
+      "schema": "",
+      "columns": {
+        "category_id": {
+          "name": "category_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "permission_id": {
+          "name": "permission_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "timestamp",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        },
+        "updated_at": {
+          "name": "updated_at",
+          "type": "timestamp",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {
+        "ep_permission_category_category_id_ep_category_id_fk": {
+          "name": "ep_permission_category_category_id_ep_category_id_fk",
+          "tableFrom": "ep_permission_category",
+          "tableTo": "ep_category",
+          "columnsFrom": [
+            "category_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        },
+        "ep_permission_category_permission_id_ep_permission_id_fk": {
+          "name": "ep_permission_category_permission_id_ep_permission_id_fk",
+          "tableFrom": "ep_permission_category",
+          "tableTo": "ep_permission",
+          "columnsFrom": [
+            "permission_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
       "policies": {},
       "checkConstraints": {},
       "isRLSEnabled": false
@@ -718,6 +784,91 @@
           "tableTo": "ep_company",
           "columnsFrom": [
             "company_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
+    },
+    "public.ep_workspace": {
+      "name": "ep_workspace",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "uuid",
+          "primaryKey": true,
+          "notNull": true,
+          "default": "gen_random_uuid()"
+        },
+        "company_id": {
+          "name": "company_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "posts_id": {
+          "name": "posts_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "name": {
+          "name": "name",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "description": {
+          "name": "description",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "timestamp",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        },
+        "updated_at": {
+          "name": "updated_at",
+          "type": "timestamp",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {
+        "ep_workspace_company_id_ep_company_id_fk": {
+          "name": "ep_workspace_company_id_ep_company_id_fk",
+          "tableFrom": "ep_workspace",
+          "tableTo": "ep_company",
+          "columnsFrom": [
+            "company_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        },
+        "ep_workspace_posts_id_ep_posts_id_fk": {
+          "name": "ep_workspace_posts_id_ep_posts_id_fk",
+          "tableFrom": "ep_workspace",
+          "tableTo": "ep_posts",
+          "columnsFrom": [
+            "posts_id"
           ],
           "columnsTo": [
             "id"

@@ -1,3 +1,7 @@
+"use client";
+
+import React from "react";
+
 import { baseComponentProps } from "../types/onboarding-steps-list";
 
 export const OnboardingView = ({

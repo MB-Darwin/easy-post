@@ -19,7 +19,7 @@ CREATE TABLE "ep_analytics" (
 CREATE TABLE "ep_category" (
 	"id" uuid PRIMARY KEY DEFAULT gen_random_uuid() NOT NULL,
 	"name" varchar,
-	"decription" text NOT NULL,
+	"description" text NOT NULL,
 	"created_at" timestamp DEFAULT now() NOT NULL,
 	"updated_at" timestamp DEFAULT now() NOT NULL
 );
@@ -45,10 +45,17 @@ CREATE TABLE "ep_permission" (
 	"id" uuid PRIMARY KEY DEFAULT gen_random_uuid() NOT NULL,
 	"category_id" uuid NOT NULL,
 	"name" varchar,
-	"decription" text NOT NULL,
+	"description" text NOT NULL,
 	"created_at" timestamp DEFAULT now() NOT NULL,
 	"updated_at" timestamp DEFAULT now() NOT NULL,
 	CONSTRAINT "ep_permission_name_unique" UNIQUE("name")
+);
+--> statement-breakpoint
+CREATE TABLE "ep_permission_category" (
+	"category_id" uuid,
+	"permission_id" uuid,
+	"created_at" timestamp DEFAULT now() NOT NULL,
+	"updated_at" timestamp DEFAULT now() NOT NULL
 );
 --> statement-breakpoint
 CREATE TABLE "ep_post_accounts" (
@@ -97,13 +104,27 @@ CREATE TABLE "ep_social_accounts" (
 	"updated_at" timestamp DEFAULT now() NOT NULL
 );
 --> statement-breakpoint
+CREATE TABLE "ep_workspace" (
+	"id" uuid PRIMARY KEY DEFAULT gen_random_uuid() NOT NULL,
+	"company_id" text NOT NULL,
+	"posts_id" uuid,
+	"name" text NOT NULL,
+	"description" text,
+	"created_at" timestamp DEFAULT now() NOT NULL,
+	"updated_at" timestamp DEFAULT now() NOT NULL
+);
+--> statement-breakpoint
 ALTER TABLE "ep_analytics" ADD CONSTRAINT "ep_analytics_post_account_id_ep_post_accounts_id_fk" FOREIGN KEY ("post_account_id") REFERENCES "public"."ep_post_accounts"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
 ALTER TABLE "ep_company" ADD CONSTRAINT "ep_company_category_id_ep_category_id_fk" FOREIGN KEY ("category_id") REFERENCES "public"."ep_category"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
 ALTER TABLE "ep_permission" ADD CONSTRAINT "ep_permission_category_id_ep_category_id_fk" FOREIGN KEY ("category_id") REFERENCES "public"."ep_category"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
+ALTER TABLE "ep_permission_category" ADD CONSTRAINT "ep_permission_category_category_id_ep_category_id_fk" FOREIGN KEY ("category_id") REFERENCES "public"."ep_category"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
+ALTER TABLE "ep_permission_category" ADD CONSTRAINT "ep_permission_category_permission_id_ep_permission_id_fk" FOREIGN KEY ("permission_id") REFERENCES "public"."ep_permission"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
 ALTER TABLE "ep_post_accounts" ADD CONSTRAINT "ep_post_accounts_post_id_ep_posts_id_fk" FOREIGN KEY ("post_id") REFERENCES "public"."ep_posts"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
 ALTER TABLE "ep_post_accounts" ADD CONSTRAINT "ep_post_accounts_account_id_ep_social_accounts_id_fk" FOREIGN KEY ("account_id") REFERENCES "public"."ep_social_accounts"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
 ALTER TABLE "ep_posts" ADD CONSTRAINT "ep_posts_company_id_ep_company_id_fk" FOREIGN KEY ("company_id") REFERENCES "public"."ep_company"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
 ALTER TABLE "ep_social_accounts" ADD CONSTRAINT "ep_social_accounts_company_id_ep_company_id_fk" FOREIGN KEY ("company_id") REFERENCES "public"."ep_company"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
+ALTER TABLE "ep_workspace" ADD CONSTRAINT "ep_workspace_company_id_ep_company_id_fk" FOREIGN KEY ("company_id") REFERENCES "public"."ep_company"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
+ALTER TABLE "ep_workspace" ADD CONSTRAINT "ep_workspace_posts_id_ep_posts_id_fk" FOREIGN KEY ("posts_id") REFERENCES "public"."ep_posts"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
 CREATE INDEX "company_handle_idx" ON "ep_company" USING btree ("handle");--> statement-breakpoint
 CREATE INDEX "company_name_idx" ON "ep_company" USING btree ("name");--> statement-breakpoint
 CREATE INDEX "post_accounts_post_id_idx" ON "ep_post_accounts" USING btree ("post_id");--> statement-breakpoint

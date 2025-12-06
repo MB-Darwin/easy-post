@@ -1,21 +1,39 @@
+// src/middleware.ts
 import { NextRequest, NextResponse } from "next/server";
+import createMiddleware from "next-intl/middleware";
+import { routing } from "@/shared/i18n/routing";
 
 const SESSION_COOKIE_NAME = "session";
 
-export async function proxy(request: NextRequest) {
+const handleI18nRouting = createMiddleware(routing);
+
+export default async function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
 
-  const protectedRoutes = ["/"];
+  // 1. Extract locale-agnostic pathname
+  const localePattern = /^\/(en|fr)(\/|$)/;
+  const pathWithoutLocale = pathname.replace(localePattern, "/");
 
-  const isProtectedRoute = protectedRoutes.some((route) =>
-    pathname.startsWith(route)
-  );
+  // 2. Identify Protected Routes
+  const isProtectedRoute = pathWithoutLocale.startsWith("/console");
 
   if (isProtectedRoute) {
+    
+    // --- 🟢 LOCAL DEV BYPASS 🟢 ---
+    // This lets you see the app locally without logging in!
+    if (process.env.NODE_ENV === "development") {
+      console.log("⚡️ Dev Mode: Skipping Auth Check");
+      return handleI18nRouting(request);
+    }
+    // -----------------------------
+
     const token = request.cookies.get(SESSION_COOKIE_NAME)?.value;
 
+    // If no token in production, redirect to login
     if (!token) {
-      return NextResponse.redirect(new URL("/unauthorized", request.url));
+      const url = request.nextUrl.clone();
+      url.pathname = "/en/auth/login"; 
+      return NextResponse.redirect(url);
     }
 
     try {
@@ -24,25 +42,18 @@ export async function proxy(request: NextRequest) {
       );
       const { jwtVerify } = await import("jose");
       await jwtVerify(token, secret);
-    } catch (error) {
-      console.error("JWT verification failed in middleware:", error);
-      return NextResponse.redirect(new URL("/unauthorized", request.url));
+    } catch (err) {
+      // If token is bad, redirect to login
+      const url = request.nextUrl.clone();
+      url.pathname = "/en/auth/login";
+      return NextResponse.redirect(url);
     }
   }
 
-  return NextResponse.next();
+  // Apply i18n routing
+  return handleI18nRouting(request);
 }
 
 export const config = {
-  matcher: [
-    /*
-     * Match all request paths except:
-     * - api routes
-     * - _next/static (static files)
-     * - _next/image (image optimization files)
-     * - favicon.ico (favicon file)
-     * - Files with extensions
-     */
-    "/((?!api|_next/static|_next/image|favicon.ico|.*\\..*).*)",
-  ],
+  matcher: ["/((?!api|_next/static|_next/image|favicon.ico|.*\\..*).*)"],
 };
