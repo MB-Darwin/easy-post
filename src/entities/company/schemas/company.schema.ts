@@ -1,44 +1,13 @@
+import {
+  accountStatusEnum,
+  postStatusEnum,
+  postTypeEnum,
+  socialPlatformEnum,
+} from "@/shared/db/schemas";
 import { createdAt, createTable, updatedAt } from "@/shared/utils";
 import { relations } from "drizzle-orm";
-import { index, pgEnum, unique } from "drizzle-orm/pg-core";
+import { index, unique } from "drizzle-orm/pg-core";
 import { createInsertSchema, createSelectSchema } from "drizzle-zod";
-
-/**
- * Company table schema
- * Stores company/tenant information from Genuka
- */
-
-export const socialPlatformEnum = pgEnum("social_platform", [
-  "facebook",
-  "instagram",
-  "threads",
-  "tiktok",
-  "linkedin",
-  "twitter",
-  "discord",
-]);
-
-export const postStatusEnum = pgEnum("post_status", [
-  "draft",
-  "scheduled",
-  "published",
-  "failed",
-]);
-
-export const accountStatusEnum = pgEnum("account_status", [
-  "active",
-  "disconnected",
-  "expired",
-]);
-
-export const campaignStatusEnum = pgEnum("campaign_status", [
-  "DRAFT",
-  "SCHEDULED",
-  "ACTIVE",
-  "COMPLETED",
-  "PAUSED",
-]);
-export const postType = pgEnum("post_type", ["STORY", "REEL", "PUBLICATION"]);
 
 export const company = createTable(
   "company",
@@ -142,7 +111,7 @@ export const posts = createTable(
       .references(() => company.id, { onDelete: "cascade" }),
     title: d.text("title"), // ajout
     content: d.text("content").notNull(),
-    type: postType("type").default("PUBLICATION").notNull(),
+    type: postTypeEnum("type").default("PUBLICATION").notNull(),
     status: postStatusEnum("status").default("draft").notNull(),
     scheduledAt: d.timestamp("scheduled_at"),
     publishedAt: d.timestamp("published_at"),

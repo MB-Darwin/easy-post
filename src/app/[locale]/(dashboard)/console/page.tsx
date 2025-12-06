@@ -38,7 +38,7 @@ export default function ConsolePage() {
           </Button>
 
           {/* 2. Wired up the Button to the Create Page */}
-          <Link href="/console/create">
+          <Link href="/posts/create">
             <Button className="rounded-full bg-gradient-to-r from-[#3C48F6] to-[#6366F1] shadow-lg shadow-[#3C48F6]/25 hover:shadow-[#3C48F6]/40 hover:scale-105 transition-all">
               <Plus className="mr-2 h-4 w-4" /> Create Post
             </Button>

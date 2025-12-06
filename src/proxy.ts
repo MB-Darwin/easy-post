@@ -6,7 +6,7 @@ const SESSION_COOKIE_NAME = "session";
 
 const handleI18nRouting = createMiddleware(routing);
 
-export default async function proxy(request: NextRequest) {
+export default async function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
 
   // Extract locale-agnostic pathname
@@ -22,8 +22,21 @@ export default async function proxy(request: NextRequest) {
     return Response.redirect(url);
   }
 
-  // Protect /console and everything after
-  const isProtectedRoute = pathWithoutLocale.startsWith("/dash");
+  // Public routes
+  const publicRoutes = ["/sign-in", "/sign-up", "/forgot-password"];
+  const isPublicRoute = publicRoutes.some((route) =>
+    pathWithoutLocale.startsWith(route)
+  );
+
+  if (isPublicRoute) {
+    return handleI18nRouting(request);
+  }
+
+  // Protected routes
+  const protectedRoutes = ["/ct", "/pt", "/st"];
+  const isProtectedRoute = protectedRoutes.some((route) =>
+    pathWithoutLocale.startsWith(route)
+  );
 
   if (isProtectedRoute) {
     const token = request.cookies.get(SESSION_COOKIE_NAME)?.value;

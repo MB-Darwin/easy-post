@@ -6,12 +6,13 @@ import {
   type MongoAbility,
 } from "@casl/ability";
 
-export type AppAction = "view" | "manage";
+export type AppAction = "view" | "create" | "edit" | "delete" | "manage";
+
 export type AppSubject =
-  | "Playground"
-  | "Models"
-  | "Documentation"
+  | "Console"
+  | "Posts"
   | "Settings"
+  | "Documentation"
   | "Projects"
   | "all";
 
@@ -27,28 +28,49 @@ export interface AppUser {
 }
 
 export function defineAbilityFor(user: AppUser): AppAbility {
-  // Use createMongoAbility as the ability factory
-  const { can, /* cannot, */ build } = new AbilityBuilder<AppAbility>(
+  const { can, cannot, build } = new AbilityBuilder<AppAbility>(
     createMongoAbility
   );
 
   switch (user.role) {
     case "admin": {
+      // Admin has full access to everything
       can("manage", "all");
       break;
     }
+
     case "editor": {
-      can("view", "Playground");
-      can("view", "Models");
-      can("view", "Documentation");
+      // Console access
+      can("view", "Console");
+
+      // Posts - full CRUD access
+      can("view", "Posts");
+      can("create", "Posts");
+      can("edit", "Posts");
+      can("delete", "Posts");
+
+      // Settings - view and edit only
       can("view", "Settings");
+      can("edit", "Settings");
+
+      // Documentation - view only
+      can("view", "Documentation");
+
+      // Projects - view and edit
       can("view", "Projects");
+      can("edit", "Projects");
       break;
     }
+
     case "viewer":
     default: {
-      can("view", "Playground");
+      // Viewer has read-only access to limited sections
+      can("view", "Console");
+      can("view", "Posts");
       can("view", "Documentation");
+
+      // Explicitly deny settings access for viewers
+      cannot("view", "Settings");
       break;
     }
   }
