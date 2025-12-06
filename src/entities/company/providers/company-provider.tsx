@@ -2,7 +2,7 @@
 
 import { useEffect } from "react";
 import { useCompanyStore } from "../store/company.store";
-import { type Company } from "../schema/company.schema";
+import { type Company } from "../schemas/company.schema";
 
 interface CompanyProviderProps {
   company: Company | null;

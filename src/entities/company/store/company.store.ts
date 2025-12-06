@@ -1,5 +1,5 @@
 import { create } from "zustand";
-import { type Company } from "../schema/company.schema";
+import { type Company } from "../schemas/company.schema";
 
 interface CompanyState {
   company: Company | null;

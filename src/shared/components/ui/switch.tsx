@@ -1,11 +1,11 @@
-'use client';
+"use client";
 
-import { cva } from 'class-variance-authority';
-import type { VariantProps } from 'class-variance-authority';
-import { Switch as SwitchPrimitive } from 'radix-ui';
-import * as React from 'react';
+import { cva } from "class-variance-authority";
+import type { VariantProps } from "class-variance-authority";
+import * as SwitchPrimitive from "@radix-ui/react-switch";
+import * as React from "react";
 
-import { cn } from '@/shared/utils/cn';
+import { cn } from "@/shared/utils/cn";
 
 // Define classes for variants
 const switchVariants = cva(
@@ -19,63 +19,63 @@ const switchVariants = cva(
   {
     variants: {
       shape: {
-        pill: 'rounded-full',
-        square: 'rounded-md',
+        pill: "rounded-full",
+        square: "rounded-md",
       },
       size: {
-        sm: 'h-5 w-8',
-        md: 'h-6 w-10',
-        lg: 'h-8 w-14',
-        xl: 'h-9 w-16',
+        sm: "h-5 w-8",
+        md: "h-6 w-10",
+        lg: "h-8 w-14",
+        xl: "h-9 w-16",
       },
       permanent: {
-        true: 'bg-input',
-        false: 'data-[state=checked]:bg-primary',
+        true: "bg-input",
+        false: "data-[state=checked]:bg-primary",
       },
     },
     defaultVariants: {
-      shape: 'pill',
+      shape: "pill",
       permanent: false,
-      size: 'md',
+      size: "md",
     },
-  },
+  }
 );
 
 const switchThumbVariants = cva(
-  'pointer-events-none block bg-white w-1/2 h-[calc(100%-4px)] shadow-lg ring-0 transition-transform start-0 data-[state=unchecked]:translate-x-[2px] data-[state=checked]:translate-x-[calc(100%-2px)] rtl:data-[state=unchecked]:-translate-x-[2px] rtl:data-[state=checked]:-translate-x-[calc(100%-2px)]',
+  "pointer-events-none block bg-white w-1/2 h-[calc(100%-4px)] shadow-lg ring-0 transition-transform start-0 data-[state=unchecked]:translate-x-[2px] data-[state=checked]:translate-x-[calc(100%-2px)] rtl:data-[state=unchecked]:-translate-x-[2px] rtl:data-[state=checked]:-translate-x-[calc(100%-2px)]",
   {
     variants: {
       shape: {
-        pill: 'rounded-full',
-        square: 'rounded-md',
+        pill: "rounded-full",
+        square: "rounded-md",
       },
       size: {
-        xs: '',
-        sm: '',
-        md: '',
-        lg: '',
-        xl: '',
+        xs: "",
+        sm: "",
+        md: "",
+        lg: "",
+        xl: "",
       },
     },
     defaultVariants: {
-      shape: 'pill',
-      size: 'md',
+      shape: "pill",
+      size: "md",
     },
-  },
+  }
 );
 const switchIndicatorVariants = cva(
-  'absolute left-1 top-1 flex items-center justify-center text-[10px] font-bold text-background transition-opacity',
+  "absolute left-1 top-1 flex items-center justify-center text-[10px] font-bold text-background transition-opacity",
   {
     variants: {
       state: {
-        checked: 'opacity-100',
-        unchecked: 'opacity-0',
+        checked: "opacity-100",
+        unchecked: "opacity-0",
       },
     },
     defaultVariants: {
-      state: 'unchecked',
+      state: "unchecked",
     },
-  },
+  }
 );
 
 function SwitchRoot({
@@ -84,7 +84,8 @@ function SwitchRoot({
   size,
   permanent,
   ...props
-}: React.ComponentProps<typeof SwitchPrimitive.Root> & VariantProps<typeof switchVariants>) {
+}: React.ComponentProps<typeof SwitchPrimitive.Root> &
+  VariantProps<typeof switchVariants>) {
   return (
     <SwitchPrimitive.Root
       data-slot="switch"
@@ -103,7 +104,8 @@ function SwitchIndicator({
   className,
   state,
   ...props
-}: React.HTMLAttributes<HTMLSpanElement> & VariantProps<typeof switchIndicatorVariants>) {
+}: React.HTMLAttributes<HTMLSpanElement> &
+  VariantProps<typeof switchIndicatorVariants>) {
   return (
     <span
       data-slot="switch-indicator"

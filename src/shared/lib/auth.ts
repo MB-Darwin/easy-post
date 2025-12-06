@@ -2,7 +2,8 @@ import { JWTPayload, SignJWT, jwtVerify } from "jose";
 import { cookies } from "next/headers";
 import { NextResponse } from "next/server";
 import { serverEnv } from "../env/server-env";
-import { companyService } from "../services/database";
+import { companyService } from "@/entities/company";
+
 // Cookie names
 const SESSION_COOKIE_NAME = "session";
 const REFRESH_COOKIE_NAME = "refresh_session";
