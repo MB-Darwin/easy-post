@@ -1,4 +1,3 @@
-// src/app/api/auth/facebook/route.ts
 import { NextRequest, NextResponse } from "next/server";
 import axios from "axios";
 import { db } from "@/shared/db";
