@@ -1,3 +1,55 @@
+import { NextRequest, NextResponse } from "next/server";
+import createMiddleware from "next-intl/middleware";
+import { routing } from "@/shared/i18n/routing";
+
+const SESSION_COOKIE_NAME = "session";
+
+const handleI18nRouting = createMiddleware(routing);
+
+// 🚨 Ce fichier doit exporter UNE fonction nommée `proxy`
+export async function proxy(request: NextRequest) {
+  const { pathname } = request.nextUrl;
+
+  // Remove locale prefix (/en or /fr)
+  const localePattern = /^\/(en|fr)(\/|$)/;
+  const pathWithoutLocale = pathname.replace(localePattern, "/");
+
+  const isProtectedRoute = pathWithoutLocale.startsWith("/console");
+
+  if (isProtectedRoute) {
+
+    // DEV BYPASS
+    if (process.env.NODE_ENV === "development") {
+      console.log("⚡ Dev Mode: Skipping Auth Check");
+      return handleI18nRouting(request);
+    }
+
+    const token = request.cookies.get(SESSION_COOKIE_NAME)?.value;
+
+    if (!token) {
+      const url = request.nextUrl.clone();
+      url.pathname = "/en/auth/login";
+      return NextResponse.redirect(url);
+    }
+
+    try {
+      const secret = new TextEncoder().encode(process.env.GENUKA_CLIENT_SECRET!);
+      const { jwtVerify } = await import("jose");
+      await jwtVerify(token, secret);
+    } catch {
+      const url = request.nextUrl.clone();
+      url.pathname = "/en/auth/login";
+      return NextResponse.redirect(url);
+    }
+  }
+
+  return handleI18nRouting(request);
+}
+
+export const config = {
+  matcher: ["/((?!api|_next/static|_next/image|favicon.ico|.*\\..*).*)"],
+};
+
 /*
 import { NextRequest, NextResponse } from "next/server";
 
