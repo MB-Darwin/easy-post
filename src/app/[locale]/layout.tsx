@@ -1,7 +1,4 @@
 // src/app/layout.tsx
-
-import type { Metadata } from "next";
-// import { Geist, Geist_Mono } from "next/font/google";
 import "@/shared/styles/globals.css";
 import { routing } from "@/shared/i18n/routing";
 import { hasLocale, NextIntlClientProvider } from "next-intl";

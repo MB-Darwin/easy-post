@@ -1,17 +1,7 @@
-import { createdAt, createTable, id, updatedAt } from "@/shared/utils";
+import { createdAt, createTable, updatedAt } from "@/shared/utils";
 import { relations } from "drizzle-orm";
-import {
-  index,
-  integer,
-  jsonb,
-  pgEnum,
-  pgTable,
-  text,
-  timestamp,
-  unique,
-  uuid,
-  varchar,
-} from "drizzle-orm/pg-core";
+import { index, pgEnum, unique } from "drizzle-orm/pg-core";
+import { createInsertSchema, createSelectSchema } from "drizzle-zod";
 
 /**
  * Company table schema
@@ -82,6 +72,9 @@ export const company = createTable(
     index("company_name_idx").on(table.name),
   ]
 );
+
+const companySelectSchema = createSelectSchema(company);
+const companyInsertSchema = createInsertSchema(company);
 
 export const workspace = createTable(
   "workspace",

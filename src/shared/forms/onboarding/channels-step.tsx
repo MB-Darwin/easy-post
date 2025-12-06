@@ -114,12 +114,12 @@ export function ChannelsStep({ onNext, onBack }: ChannelsStepProps) {
           </form.Field>
         </div>
 
-        <div className="space-y-3 pt-4">
+        <div className="flex items-center justify-center space-x-4 pt-4">
+          <Button type="button" onClick={onBack} variant={"soft"} size="lg">
+            Back
+          </Button>
           <Button type="submit" size="lg">
             Done
-          </Button>
-          <Button type="button" onClick={onBack} variant={"soft"}>
-            Back
           </Button>
         </div>
       </form>

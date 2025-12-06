@@ -85,12 +85,12 @@ export function WorkspaceStep({ onNext, onBack }: WorkspaceStepProps) {
           )}
         </form.Field>
 
-        <div className="space-y-3 pt-4">
+       <div className="flex items-center justify-center  space-x-4 pt-4">
+          <Button type="button" onClick={onBack} variant={"soft"} size="lg">
+            Skip for now
+          </Button>
           <Button type="submit" size="lg">
             Send Invites
-          </Button>
-          <Button type="button" onClick={onBack} variant={"soft"}>
-            Skip for now
           </Button>
         </div>
       </form>

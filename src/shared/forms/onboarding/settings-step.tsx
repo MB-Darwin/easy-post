@@ -115,11 +115,7 @@ export function SettingsStep({ onNext, onBack }: SettingsStepProps) {
             </form.Field>
           </div>
 
-          <Button
-            type="submit"
-            size="lg"
-            className="w-full h-12 sm:h-14 text-base sm:text-lg bg-blue-500 hover:bg-blue-600 text-white"
-          >
+          <Button type="submit" size="lg">
             Continue
           </Button>
         </form>

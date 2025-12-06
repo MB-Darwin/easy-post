@@ -131,50 +131,100 @@ export async function verifyJwt(token: string): Promise<SessionPayload | null> {
     const { payload } = await jwtVerify(token, secret);
     return payload as SessionPayload;
   } catch (error) {
-    if (axios.isAxiosError(error)) {
-      throw new Error(
-        `Token exchange failed: ${error.response?.status} ${JSON.stringify(
-          error.response?.data
-        )}`
-      );
+    // Don't log expected expiration errors
+    const isExpiredError =
+      error instanceof Error && error.message.includes("expired");
+    if (!isExpiredError) {
+      console.error("JWT verification failed:", error);
     }
-    throw error;
+    return null;
   }
 }
 
-export async function refreshAccessToken(
-  refreshToken: string
-): Promise<TokenResponse> {
-  try {
-    const response = await axios.post(
-      `${serverEnv.GENUKA_API_URL}/oauth/refresh`,
-      {
-        refresh_token: refreshToken,
-        client_id: serverEnv.GENUKA_CLIENT_ID,
-        client_secret: serverEnv.GENUKA_CLIENT_SECRET,
-      },
-      {
-        headers: {
-          "Content-Type": "application/json",
-        },
-        httpsAgent,
-      }
-    );
-
-    return response.data as TokenResponse;
-  } catch (error) {
-    if (axios.isAxiosError(error)) {
-      throw new Error(
-        `Token refresh failed: ${error.response?.status} ${JSON.stringify(
-          error.response?.data
-        )}`
-      );
-    }
-    throw error;
-  }
+/**
+ * Get the session token from cookies
+ *
+ * @returns
+ */
+export async function getSessionToken(): Promise<string | null> {
+  const cookieStore = await cookies();
+  return cookieStore.get(SESSION_COOKIE_NAME)?.value || null;
 }
 
-export async function getCompanyInfo(companyId: string) {
-  const genuka = await initializeGenuka(companyId);
-  return await genuka.company.retrieve();
+/**
+ * Get the refresh token from cookies
+ */
+export async function getRefreshToken(): Promise<string | null> {
+  const cookieStore = await cookies();
+  return cookieStore.get(REFRESH_COOKIE_NAME)?.value || null;
+}
+
+/**
+ * Verify refresh token and return companyId
+ * This is used for secure session refresh
+ */
+export async function verifyRefreshToken(): Promise<string | null> {
+  const token = await getRefreshToken();
+
+  if (!token) {
+    return null;
+  }
+
+  const payload = await verifyJwt(token);
+
+  // Ensure it's a refresh token, not a session token
+  if (!payload || payload.type !== "refresh") {
+    return null;
+  }
+
+  return payload.companyId;
+}
+
+/**
+ * Get the authenticated company from the session
+ */
+export async function getAuthenticatedCompany() {
+  const token = await getSessionToken();
+
+  if (!token) {
+    return null;
+  }
+
+  const payload = await verifyJwt(token);
+
+  if (!payload || payload.type !== "session") {
+    return null;
+  }
+
+  return (await companyService.findById(payload.companyId)) ?? null;
+}
+
+/**
+ * Check if the request is authenticated
+ */
+export async function isAuthenticated(): Promise<boolean> {
+  const company = await getAuthenticatedCompany();
+  return company !== null;
+}
+
+/**
+ * Get authenticated company or throw error
+ */
+export async function requireAuth() {
+  const company = await getAuthenticatedCompany();
+
+  if (!company) {
+    throw new Error("Unauthorized");
+  }
+
+  return company;
+}
+
+/**
+ * Destroy both session and refresh cookies (logout)
+ */
+export async function destroySession() {
+  const cookieStore = await cookies();
+  cookieStore.delete(SESSION_COOKIE_NAME);
+  cookieStore.delete(REFRESH_COOKIE_NAME);
 }
